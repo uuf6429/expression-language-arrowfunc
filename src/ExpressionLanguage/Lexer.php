@@ -5,7 +5,7 @@ namespace uuf6429\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\Token;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
 
-class Lexer extends Symfony\Component\ExpressionLanguage\Lexer
+class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
 {
     /**
      * {@inheritdoc}
