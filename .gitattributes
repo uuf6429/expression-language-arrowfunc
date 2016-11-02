@@ -1,5 +1,6 @@
 test export-ignore
 .codecov.yml export-ignore
+.gitattributes export-ignore
 .gitignore export-ignore
 .php_cs export-ignore
 .scrutinizer.yml export-ignore
