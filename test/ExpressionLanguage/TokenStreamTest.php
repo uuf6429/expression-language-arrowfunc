@@ -2,15 +2,16 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\Token;
 use uuf6429\ExpressionLanguage\TokenStream;
 
-class TokenStreamTest extends \PHPUnit_Framework_TestCase
+class TokenStreamTest extends TestCase
 {
     /** @var Token[] */
     protected $tokens;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->tokens = array(
             new Token(Token::PUNCTUATION_TYPE, '(', 1),
@@ -22,15 +23,7 @@ class TokenStreamTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @return TokenStream
-     */
-    protected function getStream()
-    {
-        return new TokenStream($this->tokens);
-    }
-
-    public function testMovingForward()
+    public function testMovingForward(): void
     {
         $tokens = $this->tokens;
         $stream = $this->getStream();
@@ -48,7 +41,7 @@ class TokenStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(3, $stream->position());
     }
 
-    public function testMovingBackward()
+    public function testMovingBackward(): void
     {
         $tokens = $this->tokens;
         $stream = $this->getStream();
@@ -68,7 +61,7 @@ class TokenStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(0, $stream->position());
     }
 
-    public function testSeeking()
+    public function testSeeking(): void
     {
         $tokens = $this->tokens;
         $stream = $this->getStream();
@@ -95,7 +88,7 @@ class TokenStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(3, $stream->position());
     }
 
-    public function testSplicing()
+    public function testSplicing(): void
     {
         $tokens = $this->tokens;
         $replacement1 = new Token(Token::NUMBER_TYPE, 42, 0);
@@ -117,5 +110,10 @@ class TokenStreamTest extends \PHPUnit_Framework_TestCase
         $original->expect($tokens[3]->type, $tokens[3]->value);
 
         $this->assertTrue($spliced->isEOF());
+    }
+
+    private function getStream(): TokenStream
+    {
+        return new TokenStream($this->tokens);
     }
 }

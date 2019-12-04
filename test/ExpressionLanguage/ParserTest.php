@@ -2,46 +2,52 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
 use uuf6429\ExpressionLanguage\Parser;
 use uuf6429\ExpressionLanguage\Lexer;
 use uuf6429\ExpressionLanguage\Node\ArrowFuncNode;
 use Symfony\Component\ExpressionLanguage\Node;
 
-class ParserTest extends \PHPUnit_Framework_TestCase
+class ParserTest extends TestCase
 {
-    /**
-     * @expectedException        \Symfony\Component\ExpressionLanguage\SyntaxError
-     * @expectedExceptionMessage Variable "foo" is not valid around position 1.
-     */
-    public function testParseWithInvalidName()
+    public function testParseWithInvalidName(): void
     {
         $lexer = new Lexer();
         $parser = new Parser(array());
+
+        $this->expectException(SyntaxError::class);
+        $this->expectExceptionMessage('Variable "foo" is not valid around position 1.');
+
         $parser->parse($lexer->tokenize('foo'));
     }
 
-    /**
-     * @expectedException        \Symfony\Component\ExpressionLanguage\SyntaxError
-     * @expectedExceptionMessage Variable "foo" is not valid around position 1.
-     */
     public function testParseWithZeroInNames()
     {
         $lexer = new Lexer();
         $parser = new Parser(array());
+
+        $this->expectException(SyntaxError::class);
+        $this->expectExceptionMessage('Variable "foo" is not valid around position 1.');
+
         $parser->parse($lexer->tokenize('foo'), array(0));
     }
 
     /**
+     * @param $node
+     * @param $expression
+     * @param array $names
+     * @param array $funcs
      * @dataProvider getParseData
      */
-    public function testParse($node, $expression, $names = array(), $funcs = array())
+    public function testParse($node, $expression, $names = [], $funcs = []): void
     {
         $lexer = new Lexer();
         $parser = new Parser($funcs);
         $this->assertEquals($node, $parser->parse($lexer->tokenize($expression), $names));
     }
 
-    public function getParseData()
+    public function getParseData(): array
     {
         $arguments = new Node\ArgumentsNode();
         $arguments->addElement(new Node\ConstantNode('arg1'));
@@ -198,7 +204,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function createGetAttrNode($node, $item, $type)
+    private function createGetAttrNode($node, $item, $type): Node\GetAttrNode
     {
         $attr = Node\GetAttrNode::ARRAY_CALL === $type ? new Node\ConstantNode($item) : new Node\NameNode($item);
 
@@ -207,16 +213,18 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider getInvalidPostfixData
-     * @expectedException \Symfony\Component\ExpressionLanguage\SyntaxError
      */
     public function testParseWithInvalidPostfixData($expr, $names = array())
     {
         $lexer = new Lexer();
         $parser = new Parser(array());
+
+        $this->expectException(SyntaxError::class);
+
         $parser->parse($lexer->tokenize($expr), $names);
     }
 
-    public function getInvalidPostfixData()
+    public function getInvalidPostfixData(): array
     {
         return array(
             array(

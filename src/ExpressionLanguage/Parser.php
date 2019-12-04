@@ -15,13 +15,15 @@ use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\Node\UnaryNode;
 use Symfony\Component\ExpressionLanguage\Token;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Symfony\Component\ExpressionLanguage\Parser as SymfonyParser;
+use Symfony\Component\ExpressionLanguage\TokenStream as SymfonyTokenStream;
 
-class Parser
+class Parser extends SymfonyParser
 {
-    const OPERATOR_LEFT = 1;
-    const OPERATOR_RIGHT = 2;
+    public const OPERATOR_LEFT = 1;
+    public const OPERATOR_RIGHT = 2;
 
-    const TOKEN_REPLACEMENT_TYPE = 'replacement';
+    private const TOKEN_REPLACEMENT_TYPE = 'replacement';
 
     /** @var TokenStream */
     private $stream;
@@ -43,6 +45,8 @@ class Parser
 
     public function __construct(array $functions)
     {
+        parent::__construct($functions);
+
         $this->functions = $functions;
 
         $this->unaryOperators = array(
@@ -104,7 +108,7 @@ class Parser
      *
      * @throws SyntaxError
      */
-    public function parse(TokenStream $stream, $names = array())
+    public function parse(SymfonyTokenStream $stream, $names = array())
     {
         $this->names = $names;
 
@@ -258,7 +262,7 @@ class Parser
         return $this->parsePrimaryExpression();
     }
 
-    protected function parseConditionalExpression($expr)
+    protected function parseConditionalExpression($expr): Node
     {
         while ($this->stream->current->test(Token::PUNCTUATION_TYPE, '?')) {
             $this->stream->next();
@@ -348,7 +352,7 @@ class Parser
         return $this->parsePostfixExpression($node);
     }
 
-    public function parseArrayExpression()
+    public function parseArrayExpression(): ArrayNode
     {
         $this->stream->expect(Token::PUNCTUATION_TYPE, '[', 'An array element was expected');
 
@@ -372,7 +376,7 @@ class Parser
         return $node;
     }
 
-    public function parseHashExpression()
+    public function parseHashExpression(): ArrayNode
     {
         $this->stream->expect(Token::PUNCTUATION_TYPE, '{', 'A hash element was expected');
 
@@ -416,10 +420,10 @@ class Parser
         return $node;
     }
 
-    public function parsePostfixExpression($node)
+    public function parsePostfixExpression($node): Node
     {
         $token = $this->stream->current;
-        while ($token->type == Token::PUNCTUATION_TYPE) {
+        while ($token->type === Token::PUNCTUATION_TYPE) {
             if ('.' === $token->value) {
                 $this->stream->next();
                 $token = $this->stream->current;
@@ -476,7 +480,7 @@ class Parser
     /**
      * Parses arguments.
      */
-    public function parseArguments()
+    public function parseArguments(): Node
     {
         $args = array();
         $this->stream->expect(Token::PUNCTUATION_TYPE, '(', 'A list of arguments must begin with an opening parenthesis');
@@ -495,7 +499,7 @@ class Parser
     /**
      * @param array $functions
      */
-    public function setFunctions(array $functions)
+    public function setFunctions(array $functions): void
     {
         $this->functions = $functions;
     }

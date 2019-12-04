@@ -19,16 +19,16 @@ class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
         $end = strlen($expression);
 
         while ($cursor < $end) {
-            if (' ' == $expression[$cursor]) {
+            if (' ' === $expression[$cursor]) {
                 ++$cursor;
 
                 continue;
             }
 
-            if (preg_match('/[0-9]+(?:\.[0-9]+)?/A', $expression, $match, null, $cursor)) {
+            if (preg_match('/\d+(?:\.\d+)?/A', $expression, $match, null, $cursor)) {
                 // numbers
-                $number = (float) $match[0];  // floats
-                if (ctype_digit($match[0]) && $number <= PHP_INT_MAX) {
+                $number = (float) $match[0]; // floats
+                if ($number <= PHP_INT_MAX && ctype_digit($match[0])) {
                     $number = (int) $match[0]; // integers lower than the maximum
                 }
                 $tokens[] = new Token(Token::NUMBER_TYPE, $number, $cursor + 1);
@@ -45,14 +45,14 @@ class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
                     throw new SyntaxError(sprintf('Unexpected "%s"', $expression[$cursor]), $cursor);
                 }
 
-                list($expect, $cur) = array_pop($brackets);
-                if ($expression[$cursor] != strtr($expect, '([{', ')]}')) {
+                [$expect, $cur] = array_pop($brackets);
+                if ($expression[$cursor] !== strtr($expect, '([{', ')]}')) {
                     throw new SyntaxError(sprintf('Unclosed "%s"', $expect), $cur);
                 }
 
                 $tokens[] = new Token(Token::PUNCTUATION_TYPE, $expression[$cursor], $cursor + 1);
                 ++$cursor;
-            } elseif (preg_match('/"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/As', $expression, $match, null, $cursor)) {
+            } elseif (preg_match('/"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/A', $expression, $match, null, $cursor)) {
                 // strings
                 $tokens[] = new Token(Token::STRING_TYPE, stripcslashes(substr($match[0], 1, -1)), $cursor + 1);
                 $cursor += strlen($match[0]);
@@ -77,7 +77,7 @@ class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
         $tokens[] = new Token(Token::EOF_TYPE, null, $cursor + 1);
 
         if (!empty($brackets)) {
-            list($expect, $cur) = array_pop($brackets);
+            [$expect, $cur] = array_pop($brackets);
             throw new SyntaxError(sprintf('Unclosed "%s"', $expect), $cur);
         }
 

@@ -2,6 +2,8 @@
 
 namespace uuf6429\ExpressionLanguage;
 
+use RuntimeException;
+
 /**
  * A wrapper for an anonymous function.
  * We do not return anonymous functions directly for security reason, to avoid
@@ -28,7 +30,7 @@ class SafeCallable
     /**
      * @return callable
      */
-    public function getCallback()
+    public function getCallback(): callable
     {
         return $this->callback;
     }
@@ -61,6 +63,6 @@ class SafeCallable
 
     public function __invoke()
     {
-        throw new Exception('Callback wrapper cannot be invoked, use $wrapper->getCallback() instead.');
+        throw new RuntimeException('Callback wrapper cannot be invoked, use $wrapper->getCallback() instead.');
     }
 }

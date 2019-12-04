@@ -2,28 +2,35 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\ExpressionLanguage\Compiler;
 use uuf6429\ExpressionLanguage\Node\ArrowFuncNode;
 use uuf6429\ExpressionLanguage\SafeCallable;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
 use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 
-class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node\AbstractNodeTest
+class ArrowFuncNodeTest extends TestCase
 {
     /**
+     * @param $expectedResult
+     * @param ArrowFuncNode $node
+     * @param array $variables
+     * @param array $functions
+     *
      * @dataProvider getEvaluateData
      */
-    public function testEvaluate($expectedResult, $node, $variables = array(), $functions = array())
+    public function testEvaluate($expectedResult, $node, $variables = array(), $functions = array()): void
     {
         $safeCallback = $node->evaluate($functions, $variables);
         $this->assertInstanceOf(SafeCallable::class, $safeCallback);
-        $this->assertTrue(is_callable($safeCallback->getCallback()));
+        $this->assertIsCallable($safeCallback->getCallback());
 
         $actualResult = $safeCallback->callArray($variables);
         $this->assertSame($expectedResult, $actualResult);
     }
 
-    public function getEvaluateData()
+    public function getEvaluateData(): array
     {
         return array(
             'parameterless call, null result' => array(
@@ -60,7 +67,21 @@ class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node
         );
     }
 
-    public function getCompileData()
+    /**
+     * @param string $expected
+     * @param ArrowFuncNode $node
+     * @param array $functions
+     *
+     * @dataProvider getCompileData
+     */
+    public function testCompile(string $expected, ArrowFuncNode $node, array $functions = []): void
+    {
+        $compiler = new Compiler($functions);
+        $node->compile($compiler);
+        $this->assertSame($expected, $compiler->getSource());
+    }
+
+    public function getCompileData(): array
     {
         return array(
             array(
@@ -87,7 +108,18 @@ class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node
         );
     }
 
-    public function getDumpData()
+    /**
+     * @param string $expected
+     * @param ArrowFuncNode $node
+     *
+     * @dataProvider getDumpData
+     */
+    public function testDump(string $expected, ArrowFuncNode $node): void
+    {
+        $this->assertSame($expected, $node->dump());
+    }
+
+    public function getDumpData(): array
     {
         return array(
             array(
