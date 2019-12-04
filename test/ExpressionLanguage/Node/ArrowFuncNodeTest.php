@@ -2,14 +2,15 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
-use Symfony\Component\ExpressionLanguage\Tests\Node\AbstractNodeTest;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\ExpressionLanguage\Compiler;
 use uuf6429\ExpressionLanguage\Node\ArrowFuncNode;
 use uuf6429\ExpressionLanguage\SafeCallable;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
 use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 
-class ArrowFuncNodeTest extends AbstractNodeTest
+class ArrowFuncNodeTest extends TestCase
 {
     /**
      * @param $expectedResult
@@ -66,6 +67,20 @@ class ArrowFuncNodeTest extends AbstractNodeTest
         );
     }
 
+    /**
+     * @param string $expected
+     * @param ArrowFuncNode $node
+     * @param array $functions
+     *
+     * @dataProvider getCompileData
+     */
+    public function testCompile(string $expected, ArrowFuncNode $node, array $functions = []): void
+    {
+        $compiler = new Compiler($functions);
+        $node->compile($compiler);
+        $this->assertSame($expected, $compiler->getSource());
+    }
+
     public function getCompileData(): array
     {
         return array(
@@ -91,6 +106,17 @@ class ArrowFuncNodeTest extends AbstractNodeTest
                 ),
             ),
         );
+    }
+
+    /**
+     * @param string $expected
+     * @param ArrowFuncNode $node
+     *
+     * @dataProvider getDumpData
+     */
+    public function testDump(string $expected, ArrowFuncNode $node): void
+    {
+        $this->assertSame($expected, $node->dump());
     }
 
     public function getDumpData(): array
