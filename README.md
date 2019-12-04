@@ -1,7 +1,7 @@
 # Symfony Expression Language Arrow Function
 
 [![Build Status](https://travis-ci.org/uuf6429/expression-language-arrowfunc.svg?branch=master)](https://travis-ci.org/uuf6429/expression-language-arrowfunc)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.5-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.1-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/uuf6429/expression-language-arrowfunc/master/LICENSE)
 [![Coverage](https://codecov.io/gh/uuf6429/expression-language-arrowfunc/branch/master/graph/badge.svg?token=Bu2nK2Kq77)](https://codecov.io/github/uuf6429/expression-language-arrowfunc?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/uuf6429/expression-language-arrowfunc/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/uuf6429/expression-language-arrowfunc/?branch=master)

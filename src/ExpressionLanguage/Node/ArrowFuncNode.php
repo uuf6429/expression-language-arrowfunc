@@ -1,16 +1,8 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace uuf6429\ExpressionLanguage\Node;
 
+use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\Compiler;
 use uuf6429\ExpressionLanguage\SafeCallable;
@@ -29,7 +21,7 @@ class ArrowFuncNode extends Node
 
     /**
      * @param NameNode[] $parameters
-     * @param Node|null  $body
+     * @param Node|null $body
      */
     public function __construct(array $parameters, Node $body = null)
     {
@@ -41,12 +33,12 @@ class ArrowFuncNode extends Node
         );
 
         if (!self::$noopSafeCallable) {
-            self::$noopSafeCallable = new SafeCallable(function () {
+            self::$noopSafeCallable = new SafeCallable(static function () {
             });
         }
     }
 
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $arguments = array();
 
@@ -81,7 +73,7 @@ class ArrowFuncNode extends Node
         }
 
         return new SafeCallable(
-            function () use ($functions, $paramNames, $bodyNode) {
+            static function () use ($functions, $paramNames, $bodyNode) {
                 $passedValues = array_combine($paramNames, func_get_args());
 
                 return $bodyNode->evaluate($functions, $passedValues);

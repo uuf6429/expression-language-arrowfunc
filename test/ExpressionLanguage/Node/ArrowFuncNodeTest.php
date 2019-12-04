@@ -2,28 +2,34 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
+use Symfony\Component\ExpressionLanguage\Tests\Node\AbstractNodeTest;
 use uuf6429\ExpressionLanguage\Node\ArrowFuncNode;
 use uuf6429\ExpressionLanguage\SafeCallable;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
 use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 
-class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node\AbstractNodeTest
+class ArrowFuncNodeTest extends AbstractNodeTest
 {
     /**
+     * @param $expectedResult
+     * @param ArrowFuncNode $node
+     * @param array $variables
+     * @param array $functions
+     *
      * @dataProvider getEvaluateData
      */
-    public function testEvaluate($expectedResult, $node, $variables = array(), $functions = array())
+    public function testEvaluate($expectedResult, $node, $variables = array(), $functions = array()): void
     {
         $safeCallback = $node->evaluate($functions, $variables);
         $this->assertInstanceOf(SafeCallable::class, $safeCallback);
-        $this->assertTrue(is_callable($safeCallback->getCallback()));
+        $this->assertIsCallable($safeCallback->getCallback());
 
         $actualResult = $safeCallback->callArray($variables);
         $this->assertSame($expectedResult, $actualResult);
     }
 
-    public function getEvaluateData()
+    public function getEvaluateData(): array
     {
         return array(
             'parameterless call, null result' => array(
@@ -60,7 +66,7 @@ class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node
         );
     }
 
-    public function getCompileData()
+    public function getCompileData(): array
     {
         return array(
             array(
@@ -87,7 +93,7 @@ class ArrowFuncNodeTest extends \Symfony\Component\ExpressionLanguage\Tests\Node
         );
     }
 
-    public function getDumpData()
+    public function getDumpData(): array
     {
         return array(
             array(

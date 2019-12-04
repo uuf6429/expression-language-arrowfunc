@@ -2,6 +2,10 @@
 
 namespace uuf6429\ExpressionLanguage;
 
+use InvalidArgumentException;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Symfony\Component\ExpressionLanguage\Token;
+
 class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
 {
     /** @var Token[] */
@@ -38,7 +42,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      *
      * {@inheritdoc}
      */
-    public function next()
+    public function next(): void
     {
         if (!isset($this->tokens[$this->position])) {
             throw new SyntaxError('Unexpected end of expression', $this->current->cursor);
@@ -52,7 +56,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
     /**
      * Move stream pointer to the beginning.
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->position = 0;
         $this->current = $this->tokens[0];
@@ -64,7 +68,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param int $offset The offset relative to $whence
      * @param int $whence One of SEEK_SET, SEEK_CUR or SEEK_END constants
      */
-    public function seek($offset, $whence)
+    public function seek($offset, $whence): void
     {
         switch ($whence) {
             case SEEK_CUR:
@@ -80,7 +84,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
                 break;
 
             default:
-                throw new \InvalidArgumentException('Value of argument $whence is not valid.');
+                throw new InvalidArgumentException('Value of argument $whence is not valid.');
         }
 
         if (!isset($this->tokens[$this->position])) {
@@ -96,7 +100,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
     /**
      * Sets the pointer to the previous token.
      */
-    public function prev()
+    public function prev(): void
     {
         if (!isset($this->tokens[$this->position])) {
             throw new SyntaxError('Unexpected start of expression', $this->current->cursor);
@@ -114,14 +118,14 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param string|null $value   The token value
      * @param string|null $message The syntax error message
      */
-    public function expectPrev($type, $value = null, $message = null)
+    public function expectPrev($type, $value = null, $message = null): void
     {
         $token = $this->current;
         if (!$token->test($type, $value)) {
             throw new SyntaxError(
                 sprintf(
                     '%sUnexpected token "%s" of value "%s" ("%s" expected%s)',
-                    $message ? $message.'. ' : '',
+                    $message ? $message . '. ' : '',
                     $token->type,
                     $token->value,
                     $type,
@@ -138,11 +142,11 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      *
      * @param int   $offset
      * @param int   $length
-     * @param array $replacements
+     * @param Token[] $replacements
      *
      * @return static
      */
-    public function splice($offset, $length, $replacements)
+    public function splice($offset, $length, $replacements): self
     {
         $tokens = $this->tokens;
         array_splice($tokens, $offset, $length, $replacements);
@@ -155,7 +159,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      *
      * @return int
      */
-    public function position()
+    public function position(): int
     {
         return $this->position;
     }

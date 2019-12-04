@@ -2,23 +2,27 @@
 
 namespace uuf6429\ExpressionLanguage\Tests;
 
+use PHPUnit\Framework\TestCase;
 use uuf6429\ExpressionLanguage\Lexer;
 use Symfony\Component\ExpressionLanguage\Token;
 use uuf6429\ExpressionLanguage\TokenStream;
 
-class LexerTest extends \PHPUnit_Framework_TestCase
+class LexerTest extends TestCase
 {
     /**
+     * @param Token[] $tokens
+     * @param string $expression
+     *
      * @dataProvider getTokenizeData
      */
-    public function testTokenize($tokens, $expression)
+    public function testTokenize(array $tokens, string $expression): void
     {
         $tokens[] = new Token('end of expression', null, strlen($expression) + 1);
         $lexer = new Lexer();
         $this->assertEquals(new TokenStream($tokens), $lexer->tokenize($expression));
     }
 
-    public function getTokenizeData()
+    public function getTokenizeData(): array
     {
         return array(
             array(
