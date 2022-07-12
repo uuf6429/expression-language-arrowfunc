@@ -1,6 +1,6 @@
 <?php
 
-namespace uuf6429\ExpressionLanguage\Tests;
+namespace uuf6429\ExpressionLanguage;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\Token;

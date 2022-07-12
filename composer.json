@@ -3,16 +3,16 @@
     "type": "library",
     "description": "Arrow function support in Symfony Expression Language",
     "keywords": ["symfony", "expression", "language", "arrow", "function", "uuf6429"],
-    "homepage": "http://github.com/uuf6429/expression-language-arrowfunc",
+    "homepage": "https://github.com/uuf6429/expression-language-arrowfunc",
     "license": "MIT",
     "authors": [
         {
             "name": "Christian Sciberras",
-            "homepage": "http://christian.sciberras.me"
+            "homepage": "https://christian.sciberras.me"
         }
     ],
     "require": {
-        "php": "^7.1",
+        "php": "^7.1 || ^8.0",
         "symfony/expression-language": "^4"
     },
     "require-dev": {
@@ -21,12 +21,12 @@
     },
     "autoload": {
         "psr-4": {
-            "uuf6429\\ExpressionLanguage\\": "src/ExpressionLanguage"
+            "uuf6429\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "uuf6429\\ExpressionLanguage\\Tests\\": "test/ExpressionLanguage"
+            "uuf6429\\": "tests/"
         }
     }
 }

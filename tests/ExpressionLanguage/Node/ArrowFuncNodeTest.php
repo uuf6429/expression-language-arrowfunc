@@ -1,6 +1,6 @@
 <?php
 
-namespace uuf6429\ExpressionLanguage\Tests;
+namespace uuf6429\ExpressionLanguage\Node;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\Compiler;
