@@ -4,7 +4,6 @@ namespace uuf6429\ExpressionLanguage;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\Token;
-use uuf6429\ExpressionLanguage\TokenStream;
 
 class TokenStreamTest extends TestCase
 {
@@ -13,14 +12,14 @@ class TokenStreamTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tokens = array(
+        $this->tokens = [
             new Token(Token::PUNCTUATION_TYPE, '(', 1),
             new Token(Token::NAME_TYPE, 'foo', 2),
             new Token(Token::OPERATOR_TYPE, '*', 6),
             new Token(Token::NAME_TYPE, 'bar', 8),
             new Token(Token::PUNCTUATION_TYPE, ')', 11),
             new Token(Token::EOF_TYPE, null, 12),
-        );
+        ];
     }
 
     public function testMovingForward(): void
@@ -94,7 +93,7 @@ class TokenStreamTest extends TestCase
         $replacement1 = new Token(Token::NUMBER_TYPE, 42, 0);
         $replacement2 = new Token(Token::NUMBER_TYPE, 64, 0);
         $original = $this->getStream();
-        $spliced = $original->splice(2, 3, array($replacement1, $replacement2));
+        $spliced = $original->splice(2, 3, [$replacement1, $replacement2]);
 
         $spliced->expect($tokens[0]->type, $tokens[0]->value);
         $spliced->expect($tokens[1]->type, $tokens[1]->value);

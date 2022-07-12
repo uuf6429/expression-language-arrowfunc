@@ -3,8 +3,6 @@
 namespace uuf6429\ExpressionLanguage;
 
 use PHPUnit\Framework\TestCase;
-use uuf6429\ExpressionLanguage\ExpressionLanguage;
-use uuf6429\ExpressionLanguage\SafeCallable;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 
 class ExpressionLanguageTest extends TestCase
@@ -30,13 +28,13 @@ class ExpressionLanguageTest extends TestCase
 
         $actual = $el->compile(
             'map((value) -> { value * 2}, values)',
-            array('values')
+            ['values']
         );
         $this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $actual);
 
         $actual = $el->evaluate(
             'map((value) -> { value * 2}, values)',
-            array('values' => array(1, 3, 5, 7))
+            ['values' => [1, 3, 5, 7]]
         );
         $this->assertSame([2, 6, 10, 14], $actual);
     }

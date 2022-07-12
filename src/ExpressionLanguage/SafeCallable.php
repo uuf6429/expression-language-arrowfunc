@@ -38,11 +38,13 @@ class SafeCallable
     /**
      * Call the callback with the provided arguments and returns result.
      *
+     * @param mixed ...$arguments
+     *
      * @return mixed
      */
-    public function call()
+    public function call(...$arguments)
     {
-        return $this->callArray(func_get_args());
+        return $this->callArray(...$arguments);
     }
 
     /**
@@ -56,9 +58,7 @@ class SafeCallable
     {
         $callback = $this->getCallback();
 
-        return count($arguments)
-            ? call_user_func_array($callback, $arguments)
-            : $callback();
+        return $callback(...$arguments);
     }
 
     public function __invoke()

@@ -49,43 +49,43 @@ class Parser extends SymfonyParser
 
         $this->functions = $functions;
 
-        $this->unaryOperators = array(
-            'not' => array('precedence' => 50),
-            '!' => array('precedence' => 50),
-            '-' => array('precedence' => 500),
-            '+' => array('precedence' => 500),
-        );
-        $this->binaryOperators = array(
-            '->' => array('precedence' => 5, 'associativity' => self::OPERATOR_LEFT),
-            'or' => array('precedence' => 10, 'associativity' => self::OPERATOR_LEFT),
-            '||' => array('precedence' => 10, 'associativity' => self::OPERATOR_LEFT),
-            'and' => array('precedence' => 15, 'associativity' => self::OPERATOR_LEFT),
-            '&&' => array('precedence' => 15, 'associativity' => self::OPERATOR_LEFT),
-            '|' => array('precedence' => 16, 'associativity' => self::OPERATOR_LEFT),
-            '^' => array('precedence' => 17, 'associativity' => self::OPERATOR_LEFT),
-            '&' => array('precedence' => 18, 'associativity' => self::OPERATOR_LEFT),
-            '==' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '===' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '!=' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '!==' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '<' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '>' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '>=' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '<=' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            'not in' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            'in' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            'matches' => array('precedence' => 20, 'associativity' => self::OPERATOR_LEFT),
-            '..' => array('precedence' => 25, 'associativity' => self::OPERATOR_LEFT),
-            '+' => array('precedence' => 30, 'associativity' => self::OPERATOR_LEFT),
-            '-' => array('precedence' => 30, 'associativity' => self::OPERATOR_LEFT),
-            '~' => array('precedence' => 40, 'associativity' => self::OPERATOR_LEFT),
-            '*' => array('precedence' => 60, 'associativity' => self::OPERATOR_LEFT),
-            '/' => array('precedence' => 60, 'associativity' => self::OPERATOR_LEFT),
-            '%' => array('precedence' => 60, 'associativity' => self::OPERATOR_LEFT),
-            '**' => array('precedence' => 200, 'associativity' => self::OPERATOR_RIGHT),
-        );
+        $this->unaryOperators = [
+            'not' => ['precedence' => 50],
+            '!' => ['precedence' => 50],
+            '-' => ['precedence' => 500],
+            '+' => ['precedence' => 500],
+        ];
+        $this->binaryOperators = [
+            '->' => ['precedence' => 5, 'associativity' => self::OPERATOR_LEFT],
+            'or' => ['precedence' => 10, 'associativity' => self::OPERATOR_LEFT],
+            '||' => ['precedence' => 10, 'associativity' => self::OPERATOR_LEFT],
+            'and' => ['precedence' => 15, 'associativity' => self::OPERATOR_LEFT],
+            '&&' => ['precedence' => 15, 'associativity' => self::OPERATOR_LEFT],
+            '|' => ['precedence' => 16, 'associativity' => self::OPERATOR_LEFT],
+            '^' => ['precedence' => 17, 'associativity' => self::OPERATOR_LEFT],
+            '&' => ['precedence' => 18, 'associativity' => self::OPERATOR_LEFT],
+            '==' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '===' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '!=' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '!==' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '<' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '>' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '>=' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '<=' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            'not in' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            'in' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            'matches' => ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT],
+            '..' => ['precedence' => 25, 'associativity' => self::OPERATOR_LEFT],
+            '+' => ['precedence' => 30, 'associativity' => self::OPERATOR_LEFT],
+            '-' => ['precedence' => 30, 'associativity' => self::OPERATOR_LEFT],
+            '~' => ['precedence' => 40, 'associativity' => self::OPERATOR_LEFT],
+            '*' => ['precedence' => 60, 'associativity' => self::OPERATOR_LEFT],
+            '/' => ['precedence' => 60, 'associativity' => self::OPERATOR_LEFT],
+            '%' => ['precedence' => 60, 'associativity' => self::OPERATOR_LEFT],
+            '**' => ['precedence' => 200, 'associativity' => self::OPERATOR_RIGHT],
+        ];
 
-        $this->replacementNodes = array();
+        $this->replacementNodes = [];
     }
 
     /**
@@ -108,7 +108,7 @@ class Parser extends SymfonyParser
      *
      * @throws SyntaxError
      */
-    public function parse(SymfonyTokenStream $stream, $names = array())
+    public function parse(SymfonyTokenStream $stream, $names = [])
     {
         $this->names = $names;
 
@@ -138,7 +138,7 @@ class Parser extends SymfonyParser
      *
      * @return TokenStream
      */
-    protected function preParseArrowFuncs(TokenStream $stream)
+    protected function preParseArrowFuncs(TokenStream $stream): TokenStream
     {
         while (!$stream->isEOF()) {
             if ($stream->current->test(Token::OPERATOR_TYPE, '->')) {
@@ -148,8 +148,8 @@ class Parser extends SymfonyParser
                 $this->replacementNodes[$replacementNodeIndex] = null;
 
                 // parse parameters
-                $parameterNames = array();
-                $parameterNodes = array();
+                $parameterNames = [];
+                $parameterNodes = [];
                 $expectParam = true;
                 $stream->prev();
                 $stream->expectPrev(Token::PUNCTUATION_TYPE, ')', 'Parameter list must end with parenthesis');
@@ -170,9 +170,9 @@ class Parser extends SymfonyParser
                 $stream->seek($operatorPos, SEEK_SET);
                 $stream->next();
                 $stream->expect(Token::PUNCTUATION_TYPE, '{', 'Anonymous function body must start with a curly bracket');
-                $bodyTokens = array();
+                $bodyTokens = [];
                 $openingBracketCount = 1;
-                while ($openingBracketCount != 0) {
+                while ($openingBracketCount !== 0) {
                     if ($stream->current->test(Token::PUNCTUATION_TYPE, '{')) {
                         ++$openingBracketCount;
                     }
@@ -205,7 +205,7 @@ class Parser extends SymfonyParser
                 // update token stream
                 $this->replacementNodes[$replacementNodeIndex] = new ArrowFuncNode($parameterNodes, $bodyNode);
                 $replacement = new Token(static::TOKEN_REPLACEMENT_TYPE, $replacementNodeIndex, $operatorCursor);
-                $stream = $stream->splice($startPos, $endPos - $startPos, array($replacement));
+                $stream = $stream->splice($startPos, $endPos - $startPos, [$replacement]);
 
                 // keep parsing anonymous functions
                 $stream->seek($startPos, SEEK_SET);
@@ -482,7 +482,7 @@ class Parser extends SymfonyParser
      */
     public function parseArguments(): Node
     {
-        $args = array();
+        $args = [];
         $this->stream->expect(Token::PUNCTUATION_TYPE, '(', 'A list of arguments must begin with an opening parenthesis');
         while (!$this->stream->current->test(Token::PUNCTUATION_TYPE, ')')) {
             if (!empty($args)) {

@@ -3,7 +3,6 @@
 namespace uuf6429\ExpressionLanguage;
 
 use ReflectionClass;
-use ReflectionException;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
 
 class ExpressionLanguage extends SymfonyExpressionLanguage
@@ -11,13 +10,9 @@ class ExpressionLanguage extends SymfonyExpressionLanguage
     /** @var Parser */
     protected $parser;
 
-    /**
-     * {@inheritdoc}
-     * @throws ReflectionException
-     */
-    public function __construct($cache = null, array $providers = array())
+    public function __construct($cache = null, array $providers = [])
     {
-        $this->parser = new Parser(array());
+        $this->parser = new Parser([]);
 
         parent::__construct($cache, $providers);
 

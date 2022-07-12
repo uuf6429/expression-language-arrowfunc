@@ -16,8 +16,6 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
 
     /**
      * Overrides parent constructor because of private properties.
-     *
-     * {@inheritdoc}
      */
     public function __construct(array $tokens)
     {
@@ -68,7 +66,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param int $offset The offset relative to $whence
      * @param int $whence One of SEEK_SET, SEEK_CUR or SEEK_END constants
      */
-    public function seek($offset, $whence): void
+    public function seek(int $offset, int $whence): void
     {
         switch ($whence) {
             case SEEK_CUR:
@@ -118,7 +116,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param string|null $value   The token value
      * @param string|null $message The syntax error message
      */
-    public function expectPrev($type, $value = null, $message = null): void
+    public function expectPrev($type, string $value = null, string $message = null): void
     {
         $token = $this->current;
         if (!$token->test($type, $value)) {
@@ -140,13 +138,13 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
     /**
      * Returns new TokenStream with tokens replaced by some others.
      *
-     * @param int   $offset
-     * @param int   $length
+     * @param int $offset
+     * @param int $length
      * @param Token[] $replacements
      *
      * @return static
      */
-    public function splice($offset, $length, $replacements): self
+    public function splice(int $offset, int $length, array $replacements): self
     {
         $tokens = $this->tokens;
         array_splice($tokens, $offset, $length, $replacements);
