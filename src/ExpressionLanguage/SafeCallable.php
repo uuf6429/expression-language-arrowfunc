@@ -58,7 +58,7 @@ class SafeCallable
     {
         $callback = $this->getCallback();
 
-        return $callback(...$arguments);
+        return $callback(...array_values($arguments));
     }
 
     public function __invoke()
