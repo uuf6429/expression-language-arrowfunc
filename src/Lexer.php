@@ -8,14 +8,14 @@ use Symfony\Component\ExpressionLanguage\SyntaxError;
 class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function tokenize($expression)
     {
-        $expression = str_replace(array("\r", "\n", "\t", "\v", "\f"), ' ', $expression);
+        $expression = str_replace(["\r", "\n", "\t", "\v", "\f"], ' ', $expression);
         $cursor = 0;
-        $tokens = array();
-        $brackets = array();
+        $tokens = [];
+        $brackets = [];
         $end = strlen($expression);
 
         while ($cursor < $end) {
@@ -35,7 +35,7 @@ class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
                 $cursor += strlen($match[0]);
             } elseif (false !== strpos('([{', $expression[$cursor])) {
                 // opening bracket
-                $brackets[] = array($expression[$cursor], $cursor);
+                $brackets[] = [$expression[$cursor], $cursor];
 
                 $tokens[] = new Token(Token::PUNCTUATION_TYPE, $expression[$cursor], $cursor + 1);
                 ++$cursor;
@@ -64,7 +64,7 @@ class Lexer extends \Symfony\Component\ExpressionLanguage\Lexer
                 // punctuation
                 $tokens[] = new Token(Token::PUNCTUATION_TYPE, $expression[$cursor], $cursor + 1);
                 ++$cursor;
-            } elseif (preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/A', $expression, $match, null, $cursor)) {
+            } elseif (preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z\d_\x7f-\xff]*/A', $expression, $match, null, $cursor)) {
                 // names
                 $tokens[] = new Token(Token::NAME_TYPE, $match[0], $cursor + 1);
                 $cursor += strlen($match[0]);

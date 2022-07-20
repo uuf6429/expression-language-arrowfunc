@@ -26,10 +26,10 @@ class ArrowFuncNode extends Node
     public function __construct(array $parameters, Node $body = null)
     {
         parent::__construct(
-            array(
+            [
                 'parameters' => $parameters,
                 'body' => $body,
-            )
+            ]
         );
 
         if (!self::$noopSafeCallable) {
@@ -40,7 +40,7 @@ class ArrowFuncNode extends Node
 
     public function compile(Compiler $compiler): void
     {
-        $arguments = array();
+        $arguments = [];
 
         foreach ($this->nodes['parameters'] as $parameterNode) {
             $arguments[] = $compiler->subcompile($parameterNode);
@@ -64,7 +64,7 @@ class ArrowFuncNode extends Node
             return self::$noopSafeCallable;
         }
 
-        $paramNames = array();
+        $paramNames = [];
 
         foreach ($this->nodes['parameters'] as $parameterNode) {
             /** @var NameNode $parameterNode */
@@ -81,9 +81,9 @@ class ArrowFuncNode extends Node
         );
     }
 
-    public function toArray()
+    public function toArray(): array
     {
-        $array = array();
+        $array = [];
 
         foreach ($this->nodes['parameters'] as $node) {
             $array[] = ', ';
