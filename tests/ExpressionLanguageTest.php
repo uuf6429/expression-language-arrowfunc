@@ -9,7 +9,7 @@ class ExpressionLanguageTest extends TestCase
 {
     public function testThatArrowFunctionsWorkAsExpected(): void
     {
-        $el = new ExpressionLanguage();
+        $el = new ExpressionLanguageWithArrowFunc();
 
         $el->addFunction(
             new ExpressionFunction(

@@ -5,7 +5,7 @@ namespace uuf6429\ExpressionLanguage;
 use ReflectionClass;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
 
-class ExpressionLanguage extends SymfonyExpressionLanguage
+class ExpressionLanguageWithArrowFunc extends SymfonyExpressionLanguage
 {
     /** @var Parser */
     protected $parser;
