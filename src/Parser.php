@@ -20,10 +20,10 @@ use Symfony\Component\ExpressionLanguage\TokenStream as SymfonyTokenStream;
 
 class Parser extends SymfonyParser
 {
-    public const OPERATOR_LEFT = 1;
-    public const OPERATOR_RIGHT = 2;
+    const OPERATOR_LEFT = 1;
+    const OPERATOR_RIGHT = 2;
 
-    private const TOKEN_REPLACEMENT_TYPE = 'replacement';
+    const TOKEN_REPLACEMENT_TYPE = 'replacement';
 
     /** @var TokenStream */
     private $stream;
@@ -499,7 +499,7 @@ class Parser extends SymfonyParser
     /**
      * @param array $functions
      */
-    public function setFunctions(array $functions): void
+    public function setFunctions(array $functions)
     {
         $this->functions = $functions;
     }

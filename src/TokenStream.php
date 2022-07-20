@@ -40,7 +40,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      *
      * {@inheritdoc}
      */
-    public function next(): void
+    public function next()
     {
         if (!isset($this->tokens[$this->position])) {
             throw new SyntaxError('Unexpected end of expression', $this->current->cursor);
@@ -54,7 +54,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
     /**
      * Move stream pointer to the beginning.
      */
-    public function rewind(): void
+    public function rewind()
     {
         $this->position = 0;
         $this->current = $this->tokens[0];
@@ -66,7 +66,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param int $offset The offset relative to $whence
      * @param int $whence One of SEEK_SET, SEEK_CUR or SEEK_END constants
      */
-    public function seek(int $offset, int $whence): void
+    public function seek(int $offset, int $whence)
     {
         switch ($whence) {
             case SEEK_CUR:
@@ -98,7 +98,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
     /**
      * Sets the pointer to the previous token.
      */
-    public function prev(): void
+    public function prev()
     {
         if (!isset($this->tokens[$this->position])) {
             throw new SyntaxError('Unexpected start of expression', $this->current->cursor);
@@ -116,7 +116,7 @@ class TokenStream extends \Symfony\Component\ExpressionLanguage\TokenStream
      * @param string|null $value   The token value
      * @param string|null $message The syntax error message
      */
-    public function expectPrev($type, string $value = null, string $message = null): void
+    public function expectPrev($type, string $value = null, string $message = null)
     {
         $token = $this->current;
         if (!$token->test($type, $value)) {

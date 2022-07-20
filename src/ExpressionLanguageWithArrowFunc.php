@@ -34,7 +34,7 @@ class ExpressionLanguageWithArrowFunc extends SymfonyExpressionLanguage
      *
      * {@inheritdoc}
      */
-    public function register($name, callable $compiler, callable $evaluator): void
+    public function register($name, callable $compiler, callable $evaluator)
     {
         $this->functions[$name] = ['compiler' => $compiler, 'evaluator' => $evaluator];
         $this->parser->setFunctions($this->functions);

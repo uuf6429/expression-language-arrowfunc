@@ -38,7 +38,7 @@ class ArrowFuncNode extends Node
         }
     }
 
-    public function compile(Compiler $compiler): void
+    public function compile(Compiler $compiler)
     {
         $arguments = [];
 
