@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
-use uuf6429\ExpressionLanguage\ParsedExpression;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
 /**

@@ -138,6 +138,7 @@ other classes, use the trait [`uuf6429\ExpressionLanguage\ArrowFunctionTrait`]:
 
 ```php
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 use uuf6429\ExpressionLanguage\ArrowFunctionTrait;
 
 class MyCustomExpressionLanguage
@@ -164,12 +165,12 @@ class MyCustomExpressionLanguage
         // TODO Implement method
     }
 
-    protected function parseWithoutArrowFunctions($expression, array $names): \Symfony\Component\ExpressionLanguage\ParsedExpression
+    protected function parseWithoutArrowFunctions($expression, array $names = []): SymfonyParsedExpression
     {
         // TODO Implement method
     }
 
-    protected function lintWithoutArrowFunctions($expression, ?array $names): void
+    protected function lintWithoutArrowFunctions($expression, array $names = []): void
     {
         // TODO Implement method
     }

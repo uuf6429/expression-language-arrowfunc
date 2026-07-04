@@ -3,14 +3,13 @@
 namespace uuf6429\ExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\Expression;
-use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
 trait ArrowFunctionTrait
 {
 	/**
 	 * @param Expression|string $expression
-	 * @param array<array-key, string> $names
+	 * @param list<string> $names
 	 */
 	abstract protected function compileWithoutArrowFunctions($expression, array $names = []): string;
 
@@ -23,21 +22,21 @@ trait ArrowFunctionTrait
 
 	/**
 	 * @param Expression|string $expression
-	 * @param array<array-key, string> $names
+	 * @param list<string> $names
 	 */
-	abstract protected function parseWithoutArrowFunctions($expression, array $names): SymfonyParsedExpression;
+	abstract protected function parseWithoutArrowFunctions($expression, array $names = []): SymfonyParsedExpression;
 
 	/**
 	 * @param Expression|string $expression
-	 * @param null|array<array-key, string> $names
+	 * @param list<string> $names
 	 */
-	abstract protected function lintWithoutArrowFunctions($expression, ?array $names): void;
+	abstract protected function lintWithoutArrowFunctions($expression, array $names = []): void;
 
 	/**
 	 * Compiles an expression with custom arrow function syntax support.
 	 *
 	 * @param Expression|string $expression
-	 * @param array<array-key, string> $names
+	 * @param list<string> $names
 	 * @api
 	 */
 	private function compileWithArrowFunctions($expression, array $names = []): string
@@ -177,7 +176,7 @@ trait ArrowFunctionTrait
 	 * Parses an expression with custom arrow function syntax support.
 	 *
 	 * @param Expression|string $expression
-	 * @param array<array-key, string> $names
+	 * @param list<string> $names
 	 * @api
 	 */
 	private function parseWithArrowFunctions($expression, array $names): ParsedExpression
@@ -187,16 +186,12 @@ trait ArrowFunctionTrait
 		}
 
 		if ($expression instanceof SymfonyParsedExpression) {
-			$nodes = $expression->getNodes();
-			assert($nodes instanceof Node);
-			return new ParsedExpression((string)$expression, $nodes, []);
+			return new ParsedExpression((string)$expression, $expression->getNodes(), []);
 		}
 
 		if (!is_string($expression)) {
 			$baseParsed = $this->parseWithoutArrowFunctions($expression, $names);
-			$nodes = $baseParsed->getNodes();
-			assert($nodes instanceof Node);
-			return new ParsedExpression((string)$baseParsed, $nodes, []);
+			return new ParsedExpression((string)$baseParsed, $baseParsed->getNodes(), []);
 		}
 
 		$res = $this->preprocessArrowFunctions($expression, $names);
@@ -207,19 +202,17 @@ trait ArrowFunctionTrait
 		$mergedNames = array_merge($names, $lambdaNames);
 
 		$baseParsed = $this->parseWithoutArrowFunctions($preprocessedExpr, $mergedNames);
-		$nodes = $baseParsed->getNodes();
-		assert($nodes instanceof Node);
-		return new ParsedExpression($expression, $nodes, $lambdas);
+		return new ParsedExpression($expression, $baseParsed->getNodes(), $lambdas);
 	}
 
 	/**
 	 * Lints an expression with custom arrow function syntax support.
 	 *
 	 * @param Expression|string $expression
-	 * @param null|array<array-key, string> $names
+	 * @param list<string> $names
 	 * @api
 	 */
-	private function lintWithArrowFunctions($expression, ?array $names): void
+	private function lintWithArrowFunctions($expression, array $names): void
 	{
 		if ($expression instanceof SymfonyParsedExpression) {
 			return;
@@ -230,18 +223,18 @@ trait ArrowFunctionTrait
 			return;
 		}
 
-		$res = $this->preprocessArrowFunctions($expression, $names ?? []);
+		$res = $this->preprocessArrowFunctions($expression, $names);
 		$preprocessedExpr = $res['expression'];
 		$lambdas = $res['lambdas'];
 
 		$lambdaNames = array_keys($lambdas);
-		$mergedNames = $names === null ? null : array_merge($names, $lambdaNames);
+		$mergedNames = array_merge($names, $lambdaNames);
 
 		$this->lintWithoutArrowFunctions($preprocessedExpr, $mergedNames);
 
 		$allLambdaParams = array_merge([], ...array_column($lambdas, 'params'));
 		foreach ($lambdas as $lambda) {
-			$lambdaMergedNames = $names === null ? null : array_merge($names, $lambdaNames, $allLambdaParams);
+			$lambdaMergedNames = array_merge($names, $lambdaNames, $allLambdaParams);
 			$this->lintWithoutArrowFunctions($lambda['body'], $lambdaMergedNames);
 		}
 	}

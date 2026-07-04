@@ -55,10 +55,10 @@ final class ExpressionLanguage
 
 	/**
 	 * @param Expression|string $expression
-	 * @param null|list<string> $names
+	 * @param list<string> $names
 	 * @api
 	 */
-	public function lint($expression, ?array $names): void
+	public function lint($expression, array $names): void
 	{
 		$this->lintWithArrowFunctions($expression, $names);
 	}
@@ -100,13 +100,13 @@ final class ExpressionLanguage
 	}
 
 	#[\Override]
-	protected function parseWithoutArrowFunctions($expression, array $names): SymfonyParsedExpression
+	protected function parseWithoutArrowFunctions($expression, array $names = []): SymfonyParsedExpression
 	{
 		return $this->base->parse($expression, $names);
 	}
 
 	#[\Override]
-	protected function lintWithoutArrowFunctions($expression, ?array $names): void
+	protected function lintWithoutArrowFunctions($expression, array $names = []): void
 	{
 		$this->base->lint($expression, $names);
 	}
