@@ -5,7 +5,7 @@ namespace uuf6429\ExpressionLanguageTests;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
-use uuf6429\ExpressionLanguage\ExpressionLanguage;
+use uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
 /**
@@ -15,7 +15,7 @@ final class ExpressionLanguageTest extends TestCase
 {
 	public function testThatArrowFunctionsWorkAsExpected(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$el->addFunction(
 			new ExpressionFunction(
@@ -44,7 +44,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testNestedArrowFunctions(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'map',
@@ -75,7 +75,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testLexicalScoping(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'apply',
@@ -103,7 +103,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testArrowFunctionInsideStringLiterals(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$actualCompileResult = $el->compile('"some text (a) -> { a }"');
 		$actualEvaluateResult = $el->evaluate('"some text (a) -> { a }"');
@@ -114,7 +114,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testMultipleParameters(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'calc',
@@ -142,7 +142,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testNoParameters(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'run',
@@ -164,7 +164,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testParseWithArrowFunctions(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'map',
@@ -196,7 +196,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testLintWithArrowFunctionsSucceeds(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'map',
@@ -216,7 +216,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testLintWithArrowFunctionsThrowsOnMainError(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$this->expectException(SyntaxError::class);
 
@@ -225,7 +225,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testLintWithArrowFunctionsThrowsOnLambdaBodyError(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$this->expectException(SyntaxError::class);
 
@@ -234,7 +234,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testLintWithArrowFunctionsThrowsOnUndefinedVariable(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$this->expectException(SyntaxError::class);
 
@@ -243,7 +243,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testSubstrCollisionPrevention(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'run',
@@ -270,7 +270,7 @@ final class ExpressionLanguageTest extends TestCase
 
 	public function testDeterministicCollisionAvoidanceWithUserVariables(): void
 	{
-		$el = new ExpressionLanguage();
+		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
 			new ExpressionFunction(
 				'apply',

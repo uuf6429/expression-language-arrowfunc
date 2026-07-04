@@ -118,12 +118,12 @@ Two different APIs are provided to suit your integration needs:
 <summary>1. Ready-Made Drop-in Replacement</summary>
 
 If you just need a standard, drop-in replacement for Symfony's standard `ExpressionLanguage` class, use
-[`uuf6429\ExpressionLanguage\ExpressionLanguage`]:
+[`uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions`]:
 
 ```php
-use uuf6429\ExpressionLanguage\ExpressionLanguage;
+use uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions;
 
-$el = new ExpressionLanguage();
+$el = new ExpressionLanguageWithArrowFunctions();
 
 $phpCode = $el->compile('(val) -> { val * 2 }', []);
 assert($phpCode === 'function ($val) { return ($val * 2); }');
@@ -189,10 +189,10 @@ Here's a more complete example:
 
 ```php
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
-use uuf6429\ExpressionLanguage\ExpressionLanguage;
+use uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
-$el = new ExpressionLanguage();
+$el = new ExpressionLanguageWithArrowFunctions();
 
 // Expose array_map() as map()
 $el->addFunction(new ExpressionFunction(
@@ -214,6 +214,6 @@ assert($result === [2, 4, 6]);
 
 [`SafeCallable`]:https://github.com/uuf6429/expression-language-arrowfunc/blob/main/src/SafeCallable.php
 
-[`uuf6429\ExpressionLanguage\ExpressionLanguage`]: https://github.com/uuf6429/expression-language-arrowfunc/blob/main/src/ExpressionLanguage.php
+[`uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions`]: https://github.com/uuf6429/expression-language-arrowfunc/blob/main/src/ExpressionLanguageWithArrowFunctions.php
 
 [`uuf6429\ExpressionLanguage\ArrowFunctionTrait`]: https://github.com/uuf6429/expression-language-arrowfunc/blob/main/src/ArrowFunctionTrait.php

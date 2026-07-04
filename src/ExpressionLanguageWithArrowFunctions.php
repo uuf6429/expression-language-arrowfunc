@@ -8,7 +8,7 @@ use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
-final class ExpressionLanguage
+final class ExpressionLanguageWithArrowFunctions
 {
 	use ArrowFunctionTrait;
 
