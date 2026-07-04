@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace uuf6429\ExpressionLanguage;
 
@@ -11,7 +11,7 @@ use RuntimeException;
  * string function names. From the userland, one can still get access to the
  * anonymous function using the various public methods.
  */
-class SafeCallable
+final class SafeCallable
 {
 	/**
 	 * @var callable

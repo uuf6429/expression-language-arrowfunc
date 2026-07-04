@@ -122,7 +122,7 @@ If you just need a standard, drop-in replacement for Symfony's standard `Express
 ```php
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
 
-$language = new ExpressionLanguage();
+$el = new ExpressionLanguage();
 ```
 
 </details>
@@ -163,24 +163,25 @@ class MyCustomExpressionLanguage extends SymfonyExpressionLanguage
 Here's a more complete example:
 
 ```php
+use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
-$language = new ExpressionLanguage();
+$el = new ExpressionLanguage();
 
 // Expose array_map() as map()
 $el->addFunction(new ExpressionFunction(
    'map',
    static fn (string $callbackExpr, string $arrayExpr) => sprintf('\array_map(%s->getCallback(), %s)', $callbackExpr, $arrayExpr),
-   static fn (array $variables, SafeCallable $callback, array $array) => array_map($callback->getCallable(), $array),
+   static fn (array $variables, SafeCallable $callback, array $array) => array_map($callback->getCallback(), $array),
 ));
 
 // Compiling
-$phpCode = $language->compile('map((val) -> { val * 2 }, values)', ['values']);
-assert($phpCode === 'map(function ($val) { return ($val * 2); }, $values)');
+$phpCode = $el->compile('map((val) -> { val * 2 }, values)', ['values']);
+assert($phpCode === '\array_map(function ($val) { return ($val * 2); }->getCallback(), $values)');
 
 // Evaluating
-$result = $language->evaluate('map((val) -> { val * 2 }, values)', ['values' => [1, 2, 3]]);
+$result = $el->evaluate('map((val) -> { val * 2 }, values)', ['values' => [1, 2, 3]]);
 assert($result === [2, 4, 6]);
 ```
 

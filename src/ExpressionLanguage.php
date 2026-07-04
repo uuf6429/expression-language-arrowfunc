@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace uuf6429\ExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
 
-class ExpressionLanguage extends SymfonyExpressionLanguage
+final class ExpressionLanguage extends SymfonyExpressionLanguage
 {
 	use ArrowFunctionTrait;
 
