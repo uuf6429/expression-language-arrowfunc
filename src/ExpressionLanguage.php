@@ -11,20 +11,20 @@ class ExpressionLanguage extends SymfonyExpressionLanguage
 
 	/**
 	 * @param Expression|string $expression
+	 * @param list<string> $names
+	 */
+	public function compile($expression, $names = []): string
+	{
+		return $this->compileWithArrowFunctions($expression, $names);
+	}
+
+	/**
+	 * @param Expression|string $expression
 	 * @param array<string, mixed> $values
 	 * @return mixed
 	 */
 	public function evaluate($expression, $values = [])
 	{
 		return $this->evaluateWithArrowFunctions($expression, $values);
-	}
-
-	/**
-	 * @param Expression|string $expression
-	 * @param list<string> $names
-	 */
-	public function compile($expression, $names = []): string
-	{
-		return $this->compileWithArrowFunctions($expression, $names);
 	}
 }

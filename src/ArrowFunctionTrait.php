@@ -234,7 +234,6 @@ trait ArrowFunctionTrait
 		// Get all lambda parameters in the entire expression
 		$allLambdaParams = array_merge([], ...array_column($lambdas, 'params'));
 
-
 		// Compile each lambda body and format them into valid PHP closures
 		$compiledLambdas = [];
 		foreach ($lambdas as $lambdaName => $lambda) {
@@ -242,7 +241,7 @@ trait ArrowFunctionTrait
 			$compiledBody = parent::compile($lambda['body'], array_merge($names, $lambdaNames, $allLambdaParams));
 
 			// Extract all PHP variable names from the compiled body
-			preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches);
+			preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches); // TODO isn't there a risk that we replace matching keywords that aren't really code? e.g. '$_lambda_123'
 			$allVars = array_unique($matches[1]);
 
 			// Exclude lambda's own parameters, lambda placeholders, and superglobals
