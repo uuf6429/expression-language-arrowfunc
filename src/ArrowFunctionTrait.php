@@ -3,6 +3,7 @@
 namespace uuf6429\ExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
 trait ArrowFunctionTrait
 {
@@ -20,20 +21,39 @@ trait ArrowFunctionTrait
 	abstract protected function evaluateWithoutArrowFunctions($expression, array $values = []);
 
 	/**
+	 * @param Expression|string $expression
+	 * @param array<array-key, string> $names
+	 */
+	abstract protected function parseWithoutArrowFunctions($expression, array $names): SymfonyParsedExpression;
+
+	/**
+	 * @param Expression|string $expression
+	 * @param null|array<array-key, string> $names
+	 */
+	abstract protected function lintWithoutArrowFunctions($expression, ?array $names): void;
+
+	/**
 	 * Compiles an expression with custom arrow function syntax support.
 	 *
 	 * @param Expression|string $expression
 	 * @param array<array-key, string> $names
+	 * @api
 	 */
 	private function compileWithArrowFunctions($expression, array $names = []): string
 	{
-		if (!is_string($expression)) {
+		if ($expression instanceof ParsedExpression) {
+			$preprocessedExpr = $expression;
+			$lambdas = $expression->getLambdas();
+		} elseif ($expression instanceof SymfonyParsedExpression) {
+			$preprocessedExpr = $expression;
+			$lambdas = [];
+		} elseif (is_string($expression)) {
+			$res = $this->preprocessArrowFunctions($expression);
+			$preprocessedExpr = $res['expression'];
+			$lambdas = $res['lambdas'];
+		} else {
 			return $this->compileWithoutArrowFunctions($expression, $names);
 		}
-
-		$res = $this->preprocessArrowFunctions($expression);
-		$preprocessedExpr = $res['expression'];
-		$lambdas = $res['lambdas'];
 
 		// Inject placeholders as expected variable names into standard Symfony compile
 		$lambdaNames = array_keys($lambdas);
@@ -97,16 +117,23 @@ trait ArrowFunctionTrait
 	 * @param Expression|string $expression
 	 * @param array<string, mixed> $values
 	 * @return mixed
+	 * @api
 	 */
 	private function evaluateWithArrowFunctions($expression, array $values = [])
 	{
-		if (!is_string($expression)) {
+		if ($expression instanceof ParsedExpression) {
+			$preprocessedExpr = $expression;
+			$lambdas = $expression->getLambdas();
+		} elseif ($expression instanceof SymfonyParsedExpression) {
+			$preprocessedExpr = $expression;
+			$lambdas = [];
+		} elseif (is_string($expression)) {
+			$res = $this->preprocessArrowFunctions($expression);
+			$preprocessedExpr = $res['expression'];
+			$lambdas = $res['lambdas'];
+		} else {
 			return $this->evaluateWithoutArrowFunctions($expression, $values);
 		}
-
-		$res = $this->preprocessArrowFunctions($expression);
-		$preprocessedExpr = $res['expression'];
-		$lambdas = $res['lambdas'];
 
 		if (count($lambdas) > 0) {
 			// Helper closure to evaluate a lambda given its name, arguments, and dynamic scope
@@ -145,9 +172,74 @@ trait ArrowFunctionTrait
 	}
 
 	/**
-	 * Preprocesses the expression to extract arrow functions and replace them with standard placeholder variables.
-	 * Handles nested arrow functions by processing them innermost-to-outermost.
+	 * Parses an expression with custom arrow function syntax support.
 	 *
+	 * @param Expression|string $expression
+	 * @param array<array-key, string> $names
+	 * @api
+	 */
+	private function parseWithArrowFunctions($expression, array $names): ParsedExpression
+	{
+		if ($expression instanceof ParsedExpression) {
+			return $expression;
+		}
+
+		if ($expression instanceof SymfonyParsedExpression) {
+			return new ParsedExpression((string)$expression, $expression->getNodes(), []);
+		}
+
+		if (!is_string($expression)) {
+			$baseParsed = $this->parseWithoutArrowFunctions($expression, $names);
+			return new ParsedExpression((string)$baseParsed, $baseParsed->getNodes(), []);
+		}
+
+		$res = $this->preprocessArrowFunctions($expression);
+		$preprocessedExpr = $res['expression'];
+		$lambdas = $res['lambdas'];
+
+		$lambdaNames = array_keys($lambdas);
+		$mergedNames = array_merge($names, $lambdaNames);
+
+		$baseParsed = $this->parseWithoutArrowFunctions($preprocessedExpr, $mergedNames);
+
+		return new ParsedExpression($expression, $baseParsed->getNodes(), $lambdas);
+	}
+
+	/**
+	 * Lints an expression with custom arrow function syntax support.
+	 *
+	 * @param Expression|string $expression
+	 * @param null|array<array-key, string> $names
+	 * @api
+	 */
+	private function lintWithArrowFunctions($expression, ?array $names): void
+	{
+		if ($expression instanceof SymfonyParsedExpression) {
+			return;
+		}
+
+		if (!is_string($expression)) {
+			$this->lintWithoutArrowFunctions($expression, $names);
+			return;
+		}
+
+		$res = $this->preprocessArrowFunctions($expression);
+		$preprocessedExpr = $res['expression'];
+		$lambdas = $res['lambdas'];
+
+		$lambdaNames = array_keys($lambdas);
+		$mergedNames = $names === null ? null : array_merge($names, $lambdaNames);
+
+		$this->lintWithoutArrowFunctions($preprocessedExpr, $mergedNames);
+
+		$allLambdaParams = array_merge([], ...array_column($lambdas, 'params'));
+		foreach ($lambdas as $lambda) {
+			$lambdaMergedNames = $names === null ? null : array_merge($names, $lambdaNames, $allLambdaParams);
+			$this->lintWithoutArrowFunctions($lambda['body'], $lambdaMergedNames);
+		}
+	}
+
+	/**
 	 * @return array{expression: string, lambdas: array<string, array{params: array<string>, body: string}>}
 	 */
 	private function preprocessArrowFunctions(string $expression): array
@@ -262,8 +354,6 @@ trait ArrowFunctionTrait
 	}
 
 	/**
-	 * Locates the positions of all valid "->" operators, skipping string literals.
-	 *
 	 * @return list<int>
 	 */
 	private function getArrowPositions(string $expression): array

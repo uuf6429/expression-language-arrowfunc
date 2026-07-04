@@ -6,7 +6,7 @@ use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
-use Symfony\Component\ExpressionLanguage\ParsedExpression;
+use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
 final class ExpressionLanguage
 {
@@ -50,7 +50,7 @@ final class ExpressionLanguage
 	 */
 	public function parse($expression, array $names): ParsedExpression
 	{
-		// TODO
+		return $this->parseWithArrowFunctions($expression, $names);
 	}
 
 	/**
@@ -60,7 +60,7 @@ final class ExpressionLanguage
 	 */
 	public function lint($expression, ?array $names): void
 	{
-		// TODO
+		$this->lintWithArrowFunctions($expression, $names);
 	}
 
 	/**
@@ -97,5 +97,17 @@ final class ExpressionLanguage
 	protected function evaluateWithoutArrowFunctions($expression, array $values = [])
 	{
 		return $this->base->evaluate($expression, $values);
+	}
+
+	#[\Override]
+	protected function parseWithoutArrowFunctions($expression, array $names): SymfonyParsedExpression
+	{
+		return $this->base->parse($expression, $names);
+	}
+
+	#[\Override]
+	protected function lintWithoutArrowFunctions($expression, ?array $names): void
+	{
+		$this->base->lint($expression, $names);
 	}
 }

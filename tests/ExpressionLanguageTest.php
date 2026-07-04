@@ -4,7 +4,9 @@ namespace uuf6429\ExpressionLanguageTests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
+use uuf6429\ExpressionLanguage\ParsedExpression;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
 /**
@@ -159,5 +161,84 @@ final class ExpressionLanguageTest extends TestCase
 
 		$this->assertSame('run(function () { return 42; })', $actualCompileResult);
 		$this->assertSame(42, $actualEvaluateResult);
+	}
+
+	public function testParseWithArrowFunctions(): void
+	{
+		$el = new ExpressionLanguage();
+		$el->addFunction(
+			new ExpressionFunction(
+				'map',
+				static function (string ...$expressions) {
+					return sprintf('map(%s)', implode(', ', $expressions));
+				},
+				static function ($args, SafeCallable $callback, array $array) {
+					return array_map($callback->getCallback(), $array);
+				}
+			)
+		);
+
+		$parsed = $el->parse('map((value) -> { value * 2 }, values)', ['values']);
+
+		$this->assertInstanceOf(ParsedExpression::class, $parsed);
+		$this->assertSame('map((value) -> { value * 2 }, values)', (string) $parsed);
+
+		$lambdas = $parsed->getLambdas();
+		$this->assertCount(1, $lambdas);
+		$this->assertArrayHasKey('__lambda_0', $lambdas);
+		$this->assertSame(['value'], $lambdas['__lambda_0']['params']);
+		$this->assertSame('value * 2', $lambdas['__lambda_0']['body']);
+
+		$evaluated = $el->evaluate($parsed, ['values' => [1, 5, 10]]);
+		$compiled = $el->compile($parsed, ['values']);
+
+		$this->assertSame([2, 10, 20], $evaluated);
+		$this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $compiled);
+	}
+
+	public function testLintWithArrowFunctionsSucceeds(): void
+	{
+		$el = new ExpressionLanguage();
+		$el->addFunction(
+			new ExpressionFunction(
+				'map',
+				static function (string ...$expressions) {
+					return sprintf('map(%s)', implode(', ', $expressions));
+				},
+				static function ($args, SafeCallable $callback, array $array) {
+					return array_map($callback->getCallback(), $array);
+				}
+			)
+		);
+
+		$el->lint('map((value) -> { value * 2 }, values)', ['values']);
+		$this->assertTrue(true);
+	}
+
+	public function testLintWithArrowFunctionsThrowsOnMainError(): void
+	{
+		$el = new ExpressionLanguage();
+
+		$this->expectException(SyntaxError::class);
+
+		$el->lint('map((value) -> { value * 2 }, values', ['values']);
+	}
+
+	public function testLintWithArrowFunctionsThrowsOnLambdaBodyError(): void
+	{
+		$el = new ExpressionLanguage();
+
+		$this->expectException(SyntaxError::class);
+
+		$el->lint('map((value) -> { value * }, values)', ['values']);
+	}
+
+	public function testLintWithArrowFunctionsThrowsOnUndefinedVariable(): void
+	{
+		$el = new ExpressionLanguage();
+
+		$this->expectException(SyntaxError::class);
+
+		$el->lint('map((value) -> { value * undefined_var }, values)', ['values']);
 	}
 }

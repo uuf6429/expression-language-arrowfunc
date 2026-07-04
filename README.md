@@ -163,6 +163,16 @@ class MyCustomExpressionLanguage
     {
         // TODO Implement method
     }
+
+    protected function parseWithoutArrowFunctions($expression, array $names): \Symfony\Component\ExpressionLanguage\ParsedExpression
+    {
+        // TODO Implement method
+    }
+
+    protected function lintWithoutArrowFunctions($expression, ?array $names): void
+    {
+        // TODO Implement method
+    }
 }
 ```
 
