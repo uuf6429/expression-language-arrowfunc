@@ -3,6 +3,7 @@
 namespace uuf6429\ExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
 trait ArrowFunctionTrait
@@ -102,9 +103,9 @@ trait ArrowFunctionTrait
 		// Replace all $__lambda_X variables in both the main compiled string and in other lambda closures
 		foreach ($compiledLambdas as $lambdaName => &$lambdaCode) {
 			$pattern = '/(?<!\\\\)\$' . preg_quote($lambdaName, '/') . '(?![a-zA-Z0-9_\x7f-\xff])/';
-			$compiled = preg_replace_callback($pattern, static fn() => $lambdaCode, $compiled);
+			$compiled = (string)preg_replace_callback($pattern, static fn() => $lambdaCode, $compiled);
 			foreach ($compiledLambdas as &$otherCode) {
-				$otherCode = preg_replace_callback($pattern, static fn() => $lambdaCode, $otherCode);
+				$otherCode = (string)preg_replace_callback($pattern, static fn() => $lambdaCode, $otherCode);
 			}
 		}
 		unset($lambdaCode, $otherCode);
@@ -140,7 +141,7 @@ trait ArrowFunctionTrait
 			// Helper closure to evaluate a lambda given its name, arguments, and dynamic scope
 			$evaluateLambda = function (string $lambdaName, array $args, array $currentScope) use ($lambdas, &$evaluateLambda) {
 				/**
-				 * @var array<string, mixed> $args
+				 * @var array<int, mixed> $args
 				 * @var array<string, mixed> $currentScope
 				 */
 				$lambda = $lambdas[$lambdaName];
@@ -186,12 +187,16 @@ trait ArrowFunctionTrait
 		}
 
 		if ($expression instanceof SymfonyParsedExpression) {
-			return new ParsedExpression((string)$expression, $expression->getNodes(), []);
+			$nodes = $expression->getNodes();
+			assert($nodes instanceof Node);
+			return new ParsedExpression((string)$expression, $nodes, []);
 		}
 
 		if (!is_string($expression)) {
 			$baseParsed = $this->parseWithoutArrowFunctions($expression, $names);
-			return new ParsedExpression((string)$baseParsed, $baseParsed->getNodes(), []);
+			$nodes = $baseParsed->getNodes();
+			assert($nodes instanceof Node);
+			return new ParsedExpression((string)$baseParsed, $nodes, []);
 		}
 
 		$res = $this->preprocessArrowFunctions($expression, $names);
@@ -202,8 +207,9 @@ trait ArrowFunctionTrait
 		$mergedNames = array_merge($names, $lambdaNames);
 
 		$baseParsed = $this->parseWithoutArrowFunctions($preprocessedExpr, $mergedNames);
-
-		return new ParsedExpression($expression, $baseParsed->getNodes(), $lambdas);
+		$nodes = $baseParsed->getNodes();
+		assert($nodes instanceof Node);
+		return new ParsedExpression($expression, $nodes, $lambdas);
 	}
 
 	/**
@@ -242,7 +248,7 @@ trait ArrowFunctionTrait
 
 	/**
 	 * @param array<string> $excludeNames
-	 * @return array{expression: string, lambdas: array<string, array{params: array<string>, body: string}>}
+	 * @return array{expression: string, lambdas: array<string, array{params: list<string>, body: string}>}
 	 */
 	private function preprocessArrowFunctions(string $expression, array $excludeNames = []): array
 	{
@@ -333,10 +339,10 @@ trait ArrowFunctionTrait
 			}
 
 			// Parse individual parameter names
-			$paramNames = array_filter(
+			$paramNames = array_values(array_filter(
 				array_map('trim', explode(',', (string)$selectedParams)),
 				static fn(string $param) => $param !== ''
-			);
+			));
 
 			while (
 				strpos($expression, "__lambda_{$lambdaCount}") !== false

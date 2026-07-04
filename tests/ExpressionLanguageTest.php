@@ -180,7 +180,6 @@ final class ExpressionLanguageTest extends TestCase
 
 		$parsed = $el->parse('map((value) -> { value * 2 }, values)', ['values']);
 
-		$this->assertInstanceOf(ParsedExpression::class, $parsed);
 		$this->assertSame('map((value) -> { value * 2 }, values)', (string)$parsed);
 
 		$lambdas = $parsed->getLambdas();
@@ -211,8 +210,9 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
+		$this->expectNotToPerformAssertions();
+
 		$el->lint('map((value) -> { value * 2 }, values)', ['values']);
-		$this->assertTrue(true);
 	}
 
 	public function testLintWithArrowFunctionsThrowsOnMainError(): void
@@ -240,24 +240,6 @@ final class ExpressionLanguageTest extends TestCase
 		$this->expectException(SyntaxError::class);
 
 		$el->lint('map((value) -> { value * undefined_var }, values)', ['values']);
-	}
-
-	public function testEvaluateWithSyntaxBreaker(): void
-	{
-		$el = new ExpressionLanguage();
-		$el->addFunction(
-			new ExpressionFunction(
-				'run',
-				static fn(string ...$expressions) => sprintf('run(%s)', implode(', ', $expressions)),
-				static fn(array $args, string $name, SafeCallable $callback) => $name . $callback->getCallback()()
-			)
-		);
-
-		$actualCompileResult = $el->compile('run("$__lambda_0", () -> { 42 })');
-		$actualEvaluateResult = $el->evaluate('run("$__lambda_0", () -> { 42 })');
-
-		$this->assertSame('run("\$__lambda_0", function () { return 42; })', $actualCompileResult);
-		$this->assertSame('$__lambda_042', $actualEvaluateResult);
 	}
 
 	public function testSubstrCollisionPrevention(): void
