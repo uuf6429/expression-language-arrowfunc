@@ -2,7 +2,7 @@
 
 namespace uuf6429\ExpressionLanguage;
 
-use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 trait ArrowFunctionTrait
 {
@@ -10,7 +10,6 @@ trait ArrowFunctionTrait
      * Preprocesses the expression to extract arrow functions and replace them with standard placeholder variables.
      * Handles nested arrow functions by processing them innermost-to-outermost.
      *
-     * @param string $expression
      * @return array{expression: string, lambdas: array<string, array{params: array<string>, body: string}>}
      */
     private function preprocess(string $expression): array
@@ -164,11 +163,11 @@ trait ArrowFunctionTrait
     /**
      * Evaluates an expression with custom arrow function syntax support.
      *
-     * @param mixed $expression
-     * @param array $values
+     * @param Expression|string $expression
+     * @param array<string, mixed> $values
      * @return mixed
      */
-    private function evaluateWithArrows($expression, $values = array())
+    private function evaluateWithArrowFunctions($expression, array $values = [])
     {
         if (!is_string($expression)) {
             return parent::evaluate($expression, $values);
@@ -182,7 +181,7 @@ trait ArrowFunctionTrait
             // Helper closure to evaluate a lambda given its name, arguments, and dynamic scope
             $evaluateLambda = function ($lambdaName, $args, $currentScope) use ($lambdas, &$evaluateLambda) {
                 $lambda = $lambdas[$lambdaName];
-                
+
                 $passedArgs = [];
                 foreach ($lambda['params'] as $idx => $paramName) {
                     $passedArgs[$paramName] = $args[$idx] ?? null;
@@ -213,11 +212,10 @@ trait ArrowFunctionTrait
     /**
      * Compiles an expression with custom arrow function syntax support.
      *
-     * @param mixed $expression
-     * @param array $names
-     * @return string
+     * @param Expression|string $expression
+     * @param array<array-key, string> $names
      */
-    private function compileWithArrows($expression, $names = array()): string
+    private function compileWithArrowFunctions($expression, array $names = []): string
     {
         if (!is_string($expression)) {
             return parent::compile($expression, $names);
@@ -232,23 +230,21 @@ trait ArrowFunctionTrait
         $compiled = parent::compile($preprocessedExpr, array_merge($names, $lambdaNames));
 
         // Get all lambda parameters in the entire expression
-        $allLambdaParams = [];
-        foreach ($lambdas as $l) {
-            $allLambdaParams = array_merge($allLambdaParams, $l['params']);
-        }
+        $allLambdaParams = array_merge([], ...array_column($lambdas, 'params'));
+
 
         // Compile each lambda body and format them into valid PHP closures
         $compiledLambdas = [];
         foreach ($lambdas as $lambdaName => $lambda) {
             // Include all known names, lambda names, and all lambda parameters
             $compiledBody = parent::compile($lambda['body'], array_merge($names, $lambdaNames, $allLambdaParams));
-            
+
             // Extract all PHP variable names from the compiled body
             preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches);
             $allVars = array_unique($matches[1] ?? []);
 
             // Exclude lambda's own parameters, lambda placeholders, and superglobals
-            $useVars = array_filter($allVars, function ($var) use ($lambda, $lambdaNames) {
+            $useVars = array_filter($allVars, static function ($var) use ($lambda, $lambdaNames) {
                 if (in_array($var, $lambda['params'], true)) {
                     return false;
                 }
@@ -263,14 +259,13 @@ trait ArrowFunctionTrait
 
             $useClause = '';
             if (!empty($useVars)) {
-                $useClause = sprintf(' use (%s)', implode(', ', array_map(function ($v) {
-                    return '$' . $v;
-                }, $useVars)));
+                $useClause = sprintf(
+                    ' use (%s)',
+                    implode(', ', array_map(static fn($v) => '$' . $v, $useVars))
+                );
             }
 
-            $compiledParams = implode(', ', array_map(function ($p) {
-                return '$' . $p;
-            }, $lambda['params']));
+            $compiledParams = implode(', ', array_map(static fn($p) => '$' . $p, $lambda['params']));
 
             $compiledLambdas[$lambdaName] = sprintf('function (%s)%s { return %s; }', $compiledParams, $useClause, $compiledBody);
         }

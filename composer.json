@@ -1,32 +1,40 @@
 {
-    "name": "uuf6429/expression-language-arrowfunc",
-    "type": "library",
-    "description": "Arrow function support in Symfony Expression Language",
-    "keywords": ["symfony", "expression", "language", "arrow", "function", "uuf6429"],
-    "homepage": "http://github.com/uuf6429/expression-language-arrowfunc",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Christian Sciberras",
-            "homepage": "http://christian.sciberras.me"
-        }
-    ],
-    "require": {
-        "php": "^7.1",
-        "symfony/expression-language": "^4"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^7 || ^8",
-        "friendsofphp/php-cs-fixer": "^2"
-    },
-    "autoload": {
-        "psr-4": {
-            "uuf6429\\ExpressionLanguage\\": "src/ExpressionLanguage"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "uuf6429\\ExpressionLanguage\\Tests\\": "test/ExpressionLanguage"
-        }
+  "name": "uuf6429/expression-language-arrowfunc",
+  "type": "library",
+  "description": "Arrow function support in Symfony Expression Language",
+  "keywords": [
+    "expression-language",
+    "symfony",
+    "lambda",
+    "arrow-function",
+    "closure",
+    "expression",
+    "dsl",
+    "parser"
+  ],
+  "homepage": "https://github.com/uuf6429/expression-language-arrowfunc",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Christian Sciberras",
+      "homepage": "https://christian.sciberras.me"
     }
+  ],
+  "require": {
+    "php": "^7.4 || ^8",
+    "symfony/expression-language": "^5.4 || ^6 || ^7 || ^8"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "uuf6429\\ExpressionLanguage\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "uuf6429\\ExpressionLanguageTests\\": "tests"
+    }
+  }
 }

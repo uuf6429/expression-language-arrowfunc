@@ -1,13 +1,16 @@
 <?php
 
-namespace uuf6429\ExpressionLanguage\Tests;
+namespace uuf6429\ExpressionLanguageTests;
 
 use PHPUnit\Framework\TestCase;
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
 use uuf6429\ExpressionLanguage\SafeCallable;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 
-class ExpressionLanguageTest extends TestCase
+/**
+ * @internal
+ */
+final class ExpressionLanguageTest extends TestCase
 {
     public function testThatArrowFunctionsWorkAsExpected(): void
     {
