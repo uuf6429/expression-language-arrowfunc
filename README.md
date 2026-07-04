@@ -140,7 +140,7 @@ other classes, use the trait [`uuf6429\ExpressionLanguage\ArrowFunctionTrait`]:
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
 use uuf6429\ExpressionLanguage\ArrowFunctionTrait;
 
-class MyCustomExpressionLanguage extends SymfonyExpressionLanguage
+class MyCustomExpressionLanguage
 {
     use ArrowFunctionTrait;
 
