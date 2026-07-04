@@ -123,7 +123,8 @@ If you just need a standard, drop-in replacement for Symfony's standard `Express
 use uuf6429\ExpressionLanguage\ExpressionLanguage;
 
 $el = new ExpressionLanguage();
-$phpCode = $el->compileWithArrowFunctions('(val) -> { val * 2 }', []);
+
+$phpCode = $el->compile('(val) -> { val * 2 }', []);
 assert($phpCode === 'function ($val) { return ($val * 2); }');
 ```
 
@@ -152,6 +153,16 @@ class MyCustomExpressionLanguage extends SymfonyExpressionLanguage
     {
         return $this->compileWithArrowFunctions($expression, $names);
     }
+
+    protected function compileWithoutArrowFunctions($expression, array $names = []): string
+    {
+        // TODO Implement method
+    }
+
+    protected function evaluateWithoutArrowFunctions($expression, array $values = [])
+    {
+        // TODO Implement method
+    }
 }
 ```
 
@@ -179,11 +190,11 @@ $el->addFunction(new ExpressionFunction(
 ));
 
 // Compiling
-$phpCode = $el->compileWithArrowFunctions('map((val) -> { val * 2 }, values)', ['values']);
+$phpCode = $el->compile('map((val) -> { val * 2 }, values)', ['values']);
 assert($phpCode === '\array_map(function ($val) { return ($val * 2); }->getCallback(), $values)');
 
 // Evaluating
-$result = $el->evaluateWithArrowFunctions('map((val) -> { val * 2 }, values)', ['values' => [1, 2, 3]]);
+$result = $el->evaluate('map((val) -> { val * 2 }, values)', ['values' => [1, 2, 3]]);
 assert($result === [2, 4, 6]);
 ```
 

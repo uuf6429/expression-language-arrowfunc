@@ -28,11 +28,11 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompileResult = $el->compileWithArrowFunctions(
+		$actualCompileResult = $el->compile(
 			'map((value) -> { value * 2}, values)',
 			['values']
 		);
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+		$actualEvaluateResult = $el->evaluate(
 			'map((value) -> { value * 2}, values)',
 			['values' => [1, 3, 5, 7]]
 		);
@@ -56,11 +56,11 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompileResult = $el->compileWithArrowFunctions(
+		$actualCompileResult = $el->compile(
 			'map((value) -> { map((v) -> { v * value }, values) }, values)',
 			['values']
 		);
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+		$actualEvaluateResult = $el->evaluate(
 			'map((value) -> { map((v) -> { v * value }, values) }, values)',
 			['values' => [2, 3]]
 		);
@@ -87,11 +87,11 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompileResult = $el->compileWithArrowFunctions(
+		$actualCompileResult = $el->compile(
 			'apply((x) -> { x + y }, value)',
 			['y', 'value']
 		);
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+		$actualEvaluateResult = $el->evaluate(
 			'apply((x) -> { x + y }, value)',
 			['y' => 10, 'value' => 5]
 		);
@@ -104,8 +104,8 @@ final class ExpressionLanguageTest extends TestCase
 	{
 		$el = new ExpressionLanguage();
 
-		$actualCompileResult = $el->compileWithArrowFunctions('"some text (a) -> { a }"');
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions('"some text (a) -> { a }"');
+		$actualCompileResult = $el->compile('"some text (a) -> { a }"');
+		$actualEvaluateResult = $el->evaluate('"some text (a) -> { a }"');
 
 		$this->assertSame('"some text (a) -> { a }"', $actualCompileResult);
 		$this->assertSame('some text (a) -> { a }', $actualEvaluateResult);
@@ -126,11 +126,11 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompileResult = $el->compileWithArrowFunctions(
+		$actualCompileResult = $el->compile(
 			'calc((x, y) -> { x * y }, multiplier, base)',
 			['multiplier', 'base']
 		);
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+		$actualEvaluateResult = $el->evaluate(
 			'calc((x, y) -> { x * y }, multiplier, base)',
 			['multiplier' => 3, 'base' => 4]
 		);
@@ -154,8 +154,8 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompileResult = $el->compileWithArrowFunctions('run(() -> { 42 })');
-		$actualEvaluateResult = $el->evaluateWithArrowFunctions('run(() -> { 42 })');
+		$actualCompileResult = $el->compile('run(() -> { 42 })');
+		$actualEvaluateResult = $el->evaluate('run(() -> { 42 })');
 
 		$this->assertSame('run(function () { return 42; })', $actualCompileResult);
 		$this->assertSame(42, $actualEvaluateResult);

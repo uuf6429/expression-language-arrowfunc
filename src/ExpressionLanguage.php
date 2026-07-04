@@ -3,31 +3,99 @@
 namespace uuf6429\ExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\ExpressionLanguage\ExpressionFunction;
+use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\ParsedExpression;
 
-final class ExpressionLanguage extends SymfonyExpressionLanguage
+final class ExpressionLanguage
 {
-	use ArrowFunctionTrait {
-		compileWithArrowFunctions as private internalCompileWithArrowFunctions;
-		evaluateWithArrowFunctions as private internalEvaluateWithArrowFunctions;
+	use ArrowFunctionTrait;
+
+	/**
+	 * @readonly
+	 */
+	private SymfonyExpressionLanguage $base;
+
+	public function __construct(?SymfonyExpressionLanguage $base = null)
+	{
+		$this->base = $base ?? new SymfonyExpressionLanguage();
 	}
 
 	/**
 	 * @param Expression|string $expression
 	 * @param list<string> $names
+	 * @api
 	 */
-	public function compileWithArrowFunctions($expression, array $names = []): string
+	public function compile($expression, array $names = []): string
 	{
-		return $this->internalCompileWithArrowFunctions($expression, $names);
+		return $this->compileWithArrowFunctions($expression, $names);
 	}
 
 	/**
 	 * @param Expression|string $expression
 	 * @param array<string, mixed> $values
 	 * @return mixed
+	 * @api
 	 */
-	public function evaluateWithArrowFunctions($expression, array $values = [])
+	public function evaluate($expression, array $values = [])
 	{
-		return $this->internalEvaluateWithArrowFunctions($expression, $values);
+		return $this->evaluateWithArrowFunctions($expression, $values);
+	}
+
+	/**
+	 * @param Expression|string $expression
+	 * @param list<string> $names
+	 * @api
+	 */
+	public function parse($expression, array $names): ParsedExpression
+	{
+		// TODO
+	}
+
+	/**
+	 * @param Expression|string $expression
+	 * @param null|list<string> $names
+	 * @api
+	 */
+	public function lint($expression, ?array $names): void
+	{
+		// TODO
+	}
+
+	/**
+	 * @api
+	 */
+	public function register(string $name, callable $compiler, callable $evaluator): void
+	{
+		$this->base->register($name, $compiler, $evaluator);
+	}
+
+	/**
+	 * @api
+	 */
+	public function addFunction(ExpressionFunction $function): void
+	{
+		$this->base->addFunction($function);
+	}
+
+	/**
+	 * @api
+	 */
+	public function registerProvider(ExpressionFunctionProviderInterface $provider): void
+	{
+		$this->base->registerProvider($provider);
+	}
+
+	#[\Override]
+	protected function compileWithoutArrowFunctions($expression, array $names = []): string
+	{
+		return $this->base->compile($expression, $names);
+	}
+
+	#[\Override]
+	protected function evaluateWithoutArrowFunctions($expression, array $values = [])
+	{
+		return $this->base->evaluate($expression, $values);
 	}
 }
