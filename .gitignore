@@ -1,3 +1,6 @@
-vendor
+/vendor/
+.php-cs-fixer.cache
 .phpunit.result.cache
-.php_cs.cache
+composer.lock
+phpstan.neon
+phpunit.xml
