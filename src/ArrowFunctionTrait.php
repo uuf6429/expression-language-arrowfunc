@@ -23,9 +23,9 @@ trait ArrowFunctionTrait
 		$preprocessedExpr = $res['expression'];
 		$lambdas = $res['lambdas'];
 
-		if (!empty($lambdas)) {
+		if (count($lambdas) > 0) {
 			// Helper closure to evaluate a lambda given its name, arguments, and dynamic scope
-			$evaluateLambda = function ($lambdaName, $args, $currentScope) use ($lambdas, &$evaluateLambda) {
+			$evaluateLambda = function (string $lambdaName, array $args, array $currentScope) use ($lambdas, &$evaluateLambda) {
 				$lambda = $lambdas[$lambdaName];
 
 				$passedArgs = [];
@@ -68,7 +68,7 @@ trait ArrowFunctionTrait
 
 		while (true) {
 			$positions = $this->getArrowPositions($expression);
-			if (empty($positions)) {
+			if (count($positions) === 0) {
 				break;
 			}
 
@@ -134,7 +134,7 @@ trait ArrowFunctionTrait
 				$bodyStr = substr($expression, $startBodyPos + 1, $endBodyPos - $startBodyPos - 1);
 
 				// If this body contains "->", skip it (resolve the innermost arrow first)
-				if (!empty($this->getArrowPositions($bodyStr))) {
+				if (count($this->getArrowPositions($bodyStr)) > 0) {
 					continue;
 				}
 
@@ -150,17 +150,20 @@ trait ArrowFunctionTrait
 			}
 
 			// Parse individual parameter names
-			$paramNames = array_filter(array_map('trim', explode(',', $selectedParams)));
+			$paramNames = array_filter(
+				array_map('trim', explode(',', (string)$selectedParams)),
+				static fn(string $param) => $param !== ''
+			);
 
 			$lambdaName = "__lambda_{$lambdaCount}";
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
-				'body' => trim($selectedBody),
+				'body' => trim((string)$selectedBody),
 			];
 			$lambdaCount++;
 
 			// Replace arrow function with the placeholder variable
-			$expression = substr($expression, 0, $selectedStart) . $lambdaName . substr($expression, $selectedEnd + 1);
+			$expression = substr($expression, 0, $selectedStart) . $lambdaName . substr($expression, (int)$selectedEnd + 1);
 		}
 
 		return [
@@ -172,8 +175,7 @@ trait ArrowFunctionTrait
 	/**
 	 * Locates the positions of all valid "->" operators, skipping string literals.
 	 *
-	 * @param string $expression
-	 * @return int[]
+	 * @return list<int>
 	 */
 	private function getArrowPositions(string $expression): array
 	{
@@ -241,10 +243,10 @@ trait ArrowFunctionTrait
 
 			// Extract all PHP variable names from the compiled body
 			preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches);
-			$allVars = array_unique($matches[1] ?? []);
+			$allVars = array_unique($matches[1]);
 
 			// Exclude lambda's own parameters, lambda placeholders, and superglobals
-			$useVars = array_filter($allVars, static function ($var) use ($lambda, $lambdaNames) {
+			$useVarNames = array_filter($allVars, static function ($var) use ($lambda) {
 				if (in_array($var, $lambda['params'], true)) {
 					return false;
 				}
@@ -258,23 +260,23 @@ trait ArrowFunctionTrait
 			});
 
 			$useClause = '';
-			if (!empty($useVars)) {
+			if (count($useVarNames) > 0) {
 				$useClause = sprintf(
 					' use (%s)',
-					implode(', ', array_map(static fn($v) => '$' . $v, $useVars))
+					implode(', ', array_map(static fn($varName) => "\${$varName}", $useVarNames))
 				);
 			}
 
-			$compiledParams = implode(', ', array_map(static fn($p) => '$' . $p, $lambda['params']));
+			$compiledParams = implode(', ', array_map(static fn($paramName) => "\${$paramName}", $lambda['params']));
 
 			$compiledLambdas[$lambdaName] = sprintf('function (%s)%s { return %s; }', $compiledParams, $useClause, $compiledBody);
 		}
 
 		// Replace all $__lambda_X variables in both the main compiled string and in other lambda closures
 		foreach ($compiledLambdas as $lambdaName => &$lambdaCode) {
-			$compiled = str_replace('$' . $lambdaName, $lambdaCode, $compiled);
-			foreach ($compiledLambdas as $otherName => &$otherCode) {
-				$otherCode = str_replace('$' . $lambdaName, $lambdaCode, $otherCode);
+			$compiled = str_replace("\${$lambdaName}", $lambdaCode, $compiled);
+			foreach ($compiledLambdas as &$otherCode) {
+				$otherCode = str_replace("\${$lambdaName}", $lambdaCode, $otherCode);
 			}
 		}
 		unset($lambdaCode, $otherCode);

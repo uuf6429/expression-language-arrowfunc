@@ -19,11 +19,8 @@ final class ExpressionLanguageTest extends TestCase
 		$el->addFunction(
 			new ExpressionFunction(
 				'map',
-				static function () {
-					return sprintf(
-						'map(%s)',
-						implode(', ', func_get_args())
-					);
+				static function (string ...$expressions) {
+					return sprintf('map(%s)', implode(', ', $expressions));
 				},
 				static function ($args, SafeCallable $callback, array $array) {
 					return array_map($callback->getCallback(), $array);
@@ -50,8 +47,8 @@ final class ExpressionLanguageTest extends TestCase
 		$el->addFunction(
 			new ExpressionFunction(
 				'map',
-				static function () {
-					return sprintf('map(%s)', implode(', ', func_get_args()));
+				static function (string ...$expressions) {
+					return sprintf('map(%s)', implode(', ', $expressions));
 				},
 				static function ($args, SafeCallable $callback, array $array) {
 					return array_map($callback->getCallback(), $array);
@@ -82,8 +79,8 @@ final class ExpressionLanguageTest extends TestCase
 		$el->addFunction(
 			new ExpressionFunction(
 				'apply',
-				static function () {
-					return sprintf('apply(%s)', implode(', ', func_get_args()));
+				static function (string ...$expressions) {
+					return sprintf('apply(%s)', implode(', ', $expressions));
 				},
 				static function ($args, SafeCallable $callback, $val) {
 					return $callback->getCallback()($val);
@@ -120,8 +117,8 @@ final class ExpressionLanguageTest extends TestCase
 		$el->addFunction(
 			new ExpressionFunction(
 				'calc',
-				static function () {
-					return sprintf('calc(%s)', implode(', ', func_get_args()));
+				static function (string ...$expressions) {
+					return sprintf('calc(%s)', implode(', ', $expressions));
 				},
 				static function ($args, SafeCallable $callback, $a, $b) {
 					return $callback->getCallback()($a, $b);
@@ -148,8 +145,8 @@ final class ExpressionLanguageTest extends TestCase
 		$el->addFunction(
 			new ExpressionFunction(
 				'run',
-				static function () {
-					return sprintf('run(%s)', implode(', ', func_get_args()));
+				static function (string ...$expressions) {
+					return sprintf('run(%s)', implode(', ', $expressions));
 				},
 				static function ($args, SafeCallable $callback) {
 					return $callback->getCallback()();

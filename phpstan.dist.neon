@@ -1,0 +1,21 @@
+includes:
+	- ./vendor/phpstan/phpstan/conf/bleedingEdge.neon
+	- ./vendor/phpstan/phpstan-strict-rules/rules.neon
+	- ./vendor/phpstan/phpstan-phpunit/extension.neon
+parameters:
+	level: max
+	paths:
+		- ./src
+		- ./tests
+	ignoreErrors:
+		# The following two are because Symfony expression-language does not properly type-hint parse() and compile()
+		-
+			rawMessage: 'Parameter #2 $names (list<string>) of method uuf6429\ExpressionLanguage\ExpressionLanguage::compile() should be contravariant with parameter $names (array) of method Symfony\Component\ExpressionLanguage\ExpressionLanguage::compile()'
+			identifier: method.childParameterType
+			count: 1
+			path: src/ExpressionLanguage.php
+		-
+			rawMessage: 'Parameter #2 $values (array<string, mixed>) of method uuf6429\ExpressionLanguage\ExpressionLanguage::evaluate() should be contravariant with parameter $values (array) of method Symfony\Component\ExpressionLanguage\ExpressionLanguage::evaluate()'
+			identifier: method.childParameterType
+			count: 1
+			path: src/ExpressionLanguage.php
