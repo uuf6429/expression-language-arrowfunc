@@ -6,15 +6,15 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpression
 
 class ExpressionLanguage extends SymfonyExpressionLanguage
 {
-    use ArrowFunctionTrait;
+	use ArrowFunctionTrait;
 
-    public function evaluate($expression, $values = [])
-    {
-        return $this->evaluateWithArrowFunctions($expression, $values);
-    }
+	public function evaluate($expression, $values = [])
+	{
+		return $this->evaluateWithArrowFunctions($expression, $values);
+	}
 
-    public function compile($expression, $names = []): string
-    {
-        return $this->compileWithArrowFunctions($expression, $names);
-    }
+	public function compile($expression, $names = []): string
+	{
+		return $this->compileWithArrowFunctions($expression, $names);
+	}
 }

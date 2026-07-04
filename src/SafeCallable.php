@@ -13,40 +13,40 @@ use RuntimeException;
  */
 class SafeCallable
 {
-    /**
-     * @var callable
-     */
-    protected $callback;
+	/**
+	 * @var callable
+	 */
+	protected $callback;
 
-    /**
-     * @param callable $callback The target callback to wrap
-     */
-    public function __construct(callable $callback)
-    {
-        $this->callback = $callback;
-    }
+	/**
+	 * @param callable $callback The target callback to wrap
+	 */
+	public function __construct(callable $callback)
+	{
+		$this->callback = $callback;
+	}
 
-    /**
-     * @return callable
-     */
-    public function getCallback(): callable
-    {
-        return $this->callback;
-    }
+	/**
+	 * Calls the wrapped callback with the provided arguments and returns result.
+	 *
+	 * @param array<array-key, mixed> $arguments
+	 * @return mixed
+	 */
+	public function call(...$arguments)
+	{
+		return $this->getCallback()(...$arguments);
+	}
 
-    /**
-     * Calls the wrapped callback with the provided arguments and returns result.
-     *
-     * @param array<array-key, mixed> $arguments
-     * @return mixed
-     */
-    public function call(...$arguments)
-    {
-        return $this->getCallback()(...$arguments);
-    }
+	/**
+	 * @return callable
+	 */
+	public function getCallback(): callable
+	{
+		return $this->callback;
+	}
 
-    public function __invoke(): void
-    {
-        throw new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.');
-    }
+	public function __invoke(): void
+	{
+		throw new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.');
+	}
 }

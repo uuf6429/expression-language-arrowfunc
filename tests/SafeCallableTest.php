@@ -11,44 +11,44 @@ use uuf6429\ExpressionLanguage\SafeCallable;
  */
 final class SafeCallableTest extends TestCase
 {
-    public function testGetCallback(): void
-    {
-        $callable = static fn() => null;
+	public function testGetCallback(): void
+	{
+		$callable = static fn() => null;
 
-        $safeCallable = new SafeCallable($callable);
+		$safeCallable = new SafeCallable($callable);
 
-        $this->assertSame($callable, $safeCallable->getCallback());
-    }
+		$this->assertSame($callable, $safeCallable->getCallback());
+	}
 
-    public function testInvokeMethod(): void
-    {
-        $safeCallable = new SafeCallable(static fn() => null);
+	public function testInvokeMethod(): void
+	{
+		$safeCallable = new SafeCallable(static fn() => null);
 
-        $this->expectExceptionObject(new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.'));
+		$this->expectExceptionObject(new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.'));
 
-        $safeCallable->__invoke();
-    }
+		$safeCallable->__invoke();
+	}
 
-    public function testInvokeMagic(): void
-    {
-        $safeCallable = new SafeCallable(static fn() => null);
+	public function testInvokeMagic(): void
+	{
+		$safeCallable = new SafeCallable(static fn() => null);
 
-        $this->expectExceptionObject(new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.'));
+		$this->expectExceptionObject(new RuntimeException('Callback cannot be invoked, use call() or getCallback() methods instead.'));
 
-        $safeCallable();
-    }
+		$safeCallable();
+	}
 
-    public function testCallWithArgs(): void
-    {
-        $safeCallable = new SafeCallable(static fn(int $a, int $b) => $a + $b);
+	public function testCallWithArgs(): void
+	{
+		$safeCallable = new SafeCallable(static fn(int $a, int $b) => $a + $b);
 
-        $this->assertSame(5, $safeCallable->call(2, 3));
-    }
+		$this->assertSame(5, $safeCallable->call(2, 3));
+	}
 
-    public function testCallWithoutArgs(): void
-    {
-        $safeCallable = new SafeCallable(static fn() => 123);
+	public function testCallWithoutArgs(): void
+	{
+		$safeCallable = new SafeCallable(static fn() => 123);
 
-        $this->assertSame(123, $safeCallable->call());
-    }
+		$this->assertSame(123, $safeCallable->call());
+	}
 }
