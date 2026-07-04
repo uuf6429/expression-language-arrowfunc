@@ -48,7 +48,7 @@ trait ArrowFunctionTrait
 			$preprocessedExpr = $expression;
 			$lambdas = [];
 		} elseif (is_string($expression)) {
-			$res = $this->preprocessArrowFunctions($expression);
+			$res = $this->preprocessArrowFunctions($expression, $names);
 			$preprocessedExpr = $res['expression'];
 			$lambdas = $res['lambdas'];
 		} else {
@@ -69,15 +69,15 @@ trait ArrowFunctionTrait
 			$compiledBody = $this->compileWithoutArrowFunctions($lambda['body'], array_merge($names, $lambdaNames, $allLambdaParams));
 
 			// Extract all PHP variable names from the compiled body
-			preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches); // TODO isn't there a risk that we replace matching keywords that aren't really code? e.g. '$_lambda_123'
+			preg_match_all('/\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', $compiledBody, $matches);
 			$allVars = array_unique($matches[1]);
 
 			// Exclude lambda's own parameters, lambda placeholders, and superglobals
-			$useVarNames = array_filter($allVars, static function ($var) use ($lambda) {
+			$useVarNames = array_filter($allVars, static function ($var) use ($lambda, $lambdaNames) {
 				if (in_array($var, $lambda['params'], true)) {
 					return false;
 				}
-				if (strpos($var, '__lambda_') === 0) {
+				if (in_array($var, $lambdaNames, true)) {
 					return false;
 				}
 				if (in_array($var, ['GLOBALS', '_SERVER', '_REQUEST', '_POST', '_GET', '_FILES', '_ENV', '_COOKIE', '_SESSION'], true)) {
@@ -101,9 +101,10 @@ trait ArrowFunctionTrait
 
 		// Replace all $__lambda_X variables in both the main compiled string and in other lambda closures
 		foreach ($compiledLambdas as $lambdaName => &$lambdaCode) {
-			$compiled = str_replace("\${$lambdaName}", $lambdaCode, $compiled);
+			$pattern = '/(?<!\\\\)\$' . preg_quote($lambdaName, '/') . '(?![a-zA-Z0-9_\x7f-\xff])/';
+			$compiled = preg_replace_callback($pattern, static fn() => $lambdaCode, $compiled);
 			foreach ($compiledLambdas as &$otherCode) {
-				$otherCode = str_replace("\${$lambdaName}", $lambdaCode, $otherCode);
+				$otherCode = preg_replace_callback($pattern, static fn() => $lambdaCode, $otherCode);
 			}
 		}
 		unset($lambdaCode, $otherCode);
@@ -128,7 +129,7 @@ trait ArrowFunctionTrait
 			$preprocessedExpr = $expression;
 			$lambdas = [];
 		} elseif (is_string($expression)) {
-			$res = $this->preprocessArrowFunctions($expression);
+			$res = $this->preprocessArrowFunctions($expression, array_keys($values));
 			$preprocessedExpr = $res['expression'];
 			$lambdas = $res['lambdas'];
 		} else {
@@ -193,7 +194,7 @@ trait ArrowFunctionTrait
 			return new ParsedExpression((string)$baseParsed, $baseParsed->getNodes(), []);
 		}
 
-		$res = $this->preprocessArrowFunctions($expression);
+		$res = $this->preprocessArrowFunctions($expression, $names);
 		$preprocessedExpr = $res['expression'];
 		$lambdas = $res['lambdas'];
 
@@ -223,7 +224,7 @@ trait ArrowFunctionTrait
 			return;
 		}
 
-		$res = $this->preprocessArrowFunctions($expression);
+		$res = $this->preprocessArrowFunctions($expression, $names ?? []);
 		$preprocessedExpr = $res['expression'];
 		$lambdas = $res['lambdas'];
 
@@ -240,9 +241,10 @@ trait ArrowFunctionTrait
 	}
 
 	/**
+	 * @param array<string> $excludeNames
 	 * @return array{expression: string, lambdas: array<string, array{params: array<string>, body: string}>}
 	 */
-	private function preprocessArrowFunctions(string $expression): array
+	private function preprocessArrowFunctions(string $expression, array $excludeNames = []): array
 	{
 		$lambdas = [];
 		$lambdaCount = 0;
@@ -336,7 +338,14 @@ trait ArrowFunctionTrait
 				static fn(string $param) => $param !== ''
 			);
 
+			while (
+				strpos($expression, "__lambda_{$lambdaCount}") !== false
+				|| in_array("__lambda_{$lambdaCount}", $excludeNames, true)
+			) {
+				$lambdaCount++;
+			}
 			$lambdaName = "__lambda_{$lambdaCount}";
+
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
 				'body' => trim((string)$selectedBody),

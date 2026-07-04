@@ -181,7 +181,7 @@ final class ExpressionLanguageTest extends TestCase
 		$parsed = $el->parse('map((value) -> { value * 2 }, values)', ['values']);
 
 		$this->assertInstanceOf(ParsedExpression::class, $parsed);
-		$this->assertSame('map((value) -> { value * 2 }, values)', (string) $parsed);
+		$this->assertSame('map((value) -> { value * 2 }, values)', (string)$parsed);
 
 		$lambdas = $parsed->getLambdas();
 		$this->assertCount(1, $lambdas);
@@ -240,5 +240,76 @@ final class ExpressionLanguageTest extends TestCase
 		$this->expectException(SyntaxError::class);
 
 		$el->lint('map((value) -> { value * undefined_var }, values)', ['values']);
+	}
+
+	public function testEvaluateWithSyntaxBreaker(): void
+	{
+		$el = new ExpressionLanguage();
+		$el->addFunction(
+			new ExpressionFunction(
+				'run',
+				static fn(string ...$expressions) => sprintf('run(%s)', implode(', ', $expressions)),
+				static fn(array $args, string $name, SafeCallable $callback) => $name . $callback->getCallback()()
+			)
+		);
+
+		$actualCompileResult = $el->compile('run("$__lambda_0", () -> { 42 })');
+		$actualEvaluateResult = $el->evaluate('run("$__lambda_0", () -> { 42 })');
+
+		$this->assertSame('run("\$__lambda_0", function () { return 42; })', $actualCompileResult);
+		$this->assertSame('$__lambda_042', $actualEvaluateResult);
+	}
+
+	public function testSubstrCollisionPrevention(): void
+	{
+		$el = new ExpressionLanguage();
+		$el->addFunction(
+			new ExpressionFunction(
+				'run',
+				static function (string ...$expressions) {
+					return sprintf('run(%s)', implode(', ', $expressions));
+				},
+				static function ($args, SafeCallable $callback) {
+					return $callback->getCallback()();
+				}
+			)
+		);
+
+		// Expression with 13 sequential arrow functions wrapped in run()
+		$expression = 'run(() -> { 1 }) + run(() -> { 2 }) + run(() -> { 3 }) + run(() -> { 4 }) + run(() -> { 5 }) + run(() -> { 6 }) + run(() -> { 7 }) + run(() -> { 8 }) + run(() -> { 9 }) + run(() -> { 10 }) + run(() -> { 11 }) + run(() -> { 12 }) + run(() -> { 13 })';
+
+		$compiled = $el->compile($expression);
+		$evaluated = $el->evaluate($expression);
+
+		$expectedCompiled = '((((((((((((run(function () { return 1; }) + run(function () { return 2; })) + run(function () { return 3; })) + run(function () { return 4; })) + run(function () { return 5; })) + run(function () { return 6; })) + run(function () { return 7; })) + run(function () { return 8; })) + run(function () { return 9; })) + run(function () { return 10; })) + run(function () { return 11; })) + run(function () { return 12; })) + run(function () { return 13; }))';
+
+		$this->assertSame($expectedCompiled, $compiled);
+		$this->assertSame(91, $evaluated);
+	}
+
+	public function testDeterministicCollisionAvoidanceWithUserVariables(): void
+	{
+		$el = new ExpressionLanguage();
+		$el->addFunction(
+			new ExpressionFunction(
+				'apply',
+				static fn(string ...$expressions) => sprintf('apply(%s)', implode(', ', $expressions)),
+				static fn($args, SafeCallable $callback, $val) => $callback->getCallback()($val)
+			)
+		);
+
+		// User defines a variable named "__lambda_0"
+		$names = ['__lambda_0', 'val'];
+		$values = ['__lambda_0' => 100, 'val' => 5];
+
+		// The expression has an arrow function and references "__lambda_0"
+		$expression = 'apply((x) -> { x + __lambda_0 }, val)';
+
+		// Should compile using "__lambda_1" as the placeholder since "__lambda_0" is in $names
+		$compiled = $el->compile($expression, $names);
+		$evaluated = $el->evaluate($expression, $values);
+
+		$this->assertSame('apply(function ($x) use ($__lambda_0) { return ($x + $__lambda_0); }, $val)', $compiled);
+		$this->assertSame(105, $evaluated);
 	}
 }
