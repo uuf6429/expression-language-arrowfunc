@@ -1,0 +1,97 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+    workflow_dispatch:
+    release:
+        types:
+            - created
+    schedule:
+        -   cron: '0 0 * * *'
+
+jobs:
+    check_actions:
+        name: Check GH Actions
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v7
+            -   uses: reviewdog/action-actionlint@v1
+                with:
+                    fail_level: 'any'
+                    filter_mode: 'nofilter'
+
+    check_composer:
+        name: Check composer.json
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v7
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: none
+                    php-version: '8.4'
+            -   run: composer validate --strict --no-check-lock
+
+    check_code:
+        name: Check code
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v7
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: none
+                    php-version: '8.4'
+            -   run: composer update --ansi --no-progress
+            -   run: composer lint
+
+    tests:
+        name: Build & Test (PHP ${{ matrix.php }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                desc:
+                    - 'on Ubuntu'
+                os:
+                    - 'ubuntu-latest'
+                php:
+                    - '7.4'
+                    - '8.0'
+                    - '8.1'
+                    - '8.2'
+                    - '8.3'
+                    - '8.4'
+                    - '8.5'
+        steps:
+            -   uses: actions/checkout@v7
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: "${{ matrix.php }}"
+                    ini-file: "development"
+                    coverage: "xdebug"
+            -   id: composer-cache
+                shell: bash
+                run: echo "dir=$(composer config cache-dir)" >> "$GITHUB_OUTPUT"
+            -   uses: actions/cache@v6
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+            -   run: composer update --ansi --no-progress
+            -   run: composer test -- --coverage-clover=coverage.xml --log-junit junit.xml --testdox
+            -   if: ${{ !cancelled() }}
+                uses: codecov/codecov-action@v7
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    report_type: coverage
+                    name: "Coverage: PHP ${{ matrix.php }}"
+                    flags: ${{ runner.os }}-php-${{ matrix.php }}
+            -   if: ${{ !cancelled() }}
+                uses: codecov/codecov-action@v7
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    report_type: test_results
+                    name: "Tests: PHP ${{ matrix.php }}"
+                    flags: ${{ runner.os }}-php-${{ matrix.php }}
+
