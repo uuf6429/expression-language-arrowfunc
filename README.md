@@ -29,12 +29,13 @@ Conceptually:
 
 ```mermaid
 flowchart TD
-	A["items.filter((item) -> { item.type === 'T1' }).map((item) -> { item.name })"] --> B["Preprocess"]
-	B --> C["Expression:<br/>items.filter(__lambda_1).map(__lambda_2)"]
-	B --> D["(New) Variables:<br/>$__lambda_1 = fn (item) => item.type === 'T1'<br/>$__lambda_2 = fn (item) => item.name"]
+	A["items<br/>&nbsp;&nbsp;.filter((item) -> { item.type === 'T1' })<br/>&nbsp;&nbsp;.map((item) -> { item.name })"] --> B["Preprocess"]
+	B --> C["<b>Expression:</b><br/><br/>items<br/>&nbsp;&nbsp;.filter(__lambda_1)<br/>&nbsp;&nbsp;.map(__lambda_2)"]
+	B --> D["<b>Variables:</b><br/><br/>$items = ... (original variable)<br/>$__lambda_1 = fn (item) => item.type === 'T1'<br/>$__lambda_2 = fn (item) => item.name"]
 	C --> E["compile() or evaluate()"]
 	D --> E
 	classDef default font-family: monospace;
+	style A text-align: left;
 	style C text-align: left;
 	style D text-align: left;
 ```
