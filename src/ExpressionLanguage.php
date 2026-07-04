@@ -7,15 +7,18 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage as SymfonyExpression
 
 final class ExpressionLanguage extends SymfonyExpressionLanguage
 {
-	use ArrowFunctionTrait;
+	use ArrowFunctionTrait {
+		compileWithArrowFunctions as private internalCompileWithArrowFunctions;
+		evaluateWithArrowFunctions as private internalEvaluateWithArrowFunctions;
+	}
 
 	/**
 	 * @param Expression|string $expression
 	 * @param list<string> $names
 	 */
-	public function compile($expression, $names = []): string
+	public function compileWithArrowFunctions($expression, array $names = []): string
 	{
-		return $this->compileWithArrowFunctions($expression, $names);
+		return $this->internalCompileWithArrowFunctions($expression, $names);
 	}
 
 	/**
@@ -23,8 +26,8 @@ final class ExpressionLanguage extends SymfonyExpressionLanguage
 	 * @param array<string, mixed> $values
 	 * @return mixed
 	 */
-	public function evaluate($expression, $values = [])
+	public function evaluateWithArrowFunctions($expression, array $values = [])
 	{
-		return $this->evaluateWithArrowFunctions($expression, $values);
+		return $this->internalEvaluateWithArrowFunctions($expression, $values);
 	}
 }

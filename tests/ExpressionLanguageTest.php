@@ -28,17 +28,17 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actual = $el->compile(
+		$actualCompileResult = $el->compileWithArrowFunctions(
 			'map((value) -> { value * 2}, values)',
-			array('values')
+			['values']
 		);
-		$this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $actual);
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+			'map((value) -> { value * 2}, values)',
+			['values' => [1, 3, 5, 7]]
+		);
 
-		$actual = $el->evaluate(
-			'map((value) -> { value * 2}, values)',
-			array('values' => array(1, 3, 5, 7))
-		);
-		$this->assertSame([2, 6, 10, 14], $actual);
+		$this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $actualCompileResult);
+		$this->assertSame([2, 6, 10, 14], $actualEvaluateResult);
 	}
 
 	public function testNestedArrowFunctions(): void
@@ -56,21 +56,20 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompile = $el->compile(
+		$actualCompileResult = $el->compileWithArrowFunctions(
 			'map((value) -> { map((v) -> { v * value }, values) }, values)',
-			array('values')
+			['values']
 		);
-		$this->assertSame(
-			'map(function ($value) use ($values) { return map(function ($v) use ($value) { return ($v * $value); }, $values); }, $values)',
-			$actualCompile
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+			'map((value) -> { map((v) -> { v * value }, values) }, values)',
+			['values' => [2, 3]]
 		);
 
-		$actualEvaluate = $el->evaluate(
-			'map((value) -> { map((v) -> { v * value }, values) }, values)',
-			array('values' => array(2, 3))
+		$this->assertSame(
+			'map(function ($value) use ($values) { return map(function ($v) use ($value) { return ($v * $value); }, $values); }, $values)',
+			$actualCompileResult
 		);
-		// Expect [[2*2, 3*2], [2*3, 3*3]] = [[4, 6], [6, 9]]
-		$this->assertSame([[4, 6], [6, 9]], $actualEvaluate);
+		$this->assertSame([[4, 6], [6, 9]], $actualEvaluateResult);
 	}
 
 	public function testLexicalScoping(): void
@@ -88,27 +87,28 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompile = $el->compile(
+		$actualCompileResult = $el->compileWithArrowFunctions(
 			'apply((x) -> { x + y }, value)',
-			array('y', 'value')
+			['y', 'value']
 		);
-		$this->assertSame('apply(function ($x) use ($y) { return ($x + $y); }, $value)', $actualCompile);
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+			'apply((x) -> { x + y }, value)',
+			['y' => 10, 'value' => 5]
+		);
 
-		$actualEvaluate = $el->evaluate(
-			'apply((x) -> { x + y }, value)',
-			array('y' => 10, 'value' => 5)
-		);
-		$this->assertSame(15, $actualEvaluate);
+		$this->assertSame('apply(function ($x) use ($y) { return ($x + $y); }, $value)', $actualCompileResult);
+		$this->assertSame(15, $actualEvaluateResult);
 	}
 
 	public function testArrowFunctionInsideStringLiterals(): void
 	{
 		$el = new ExpressionLanguage();
-		$actualCompile = $el->compile('"some text (a) -> { a }"');
-		$this->assertSame('"some text (a) -> { a }"', $actualCompile);
 
-		$actualEvaluate = $el->evaluate('"some text (a) -> { a }"');
-		$this->assertSame('some text (a) -> { a }', $actualEvaluate);
+		$actualCompileResult = $el->compileWithArrowFunctions('"some text (a) -> { a }"');
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions('"some text (a) -> { a }"');
+
+		$this->assertSame('"some text (a) -> { a }"', $actualCompileResult);
+		$this->assertSame('some text (a) -> { a }', $actualEvaluateResult);
 	}
 
 	public function testMultipleParameters(): void
@@ -126,17 +126,17 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompile = $el->compile(
+		$actualCompileResult = $el->compileWithArrowFunctions(
 			'calc((x, y) -> { x * y }, multiplier, base)',
-			array('multiplier', 'base')
+			['multiplier', 'base']
 		);
-		$this->assertSame('calc(function ($x, $y) { return ($x * $y); }, $multiplier, $base)', $actualCompile);
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions(
+			'calc((x, y) -> { x * y }, multiplier, base)',
+			['multiplier' => 3, 'base' => 4]
+		);
 
-		$actualEvaluate = $el->evaluate(
-			'calc((x, y) -> { x * y }, multiplier, base)',
-			array('multiplier' => 3, 'base' => 4)
-		);
-		$this->assertSame(12, $actualEvaluate);
+		$this->assertSame('calc(function ($x, $y) { return ($x * $y); }, $multiplier, $base)', $actualCompileResult);
+		$this->assertSame(12, $actualEvaluateResult);
 	}
 
 	public function testNoParameters(): void
@@ -154,14 +154,10 @@ final class ExpressionLanguageTest extends TestCase
 			)
 		);
 
-		$actualCompile = $el->compile(
-			'run(() -> { 42 })'
-		);
-		$this->assertSame('run(function () { return 42; })', $actualCompile);
+		$actualCompileResult = $el->compileWithArrowFunctions('run(() -> { 42 })');
+		$actualEvaluateResult = $el->evaluateWithArrowFunctions('run(() -> { 42 })');
 
-		$actualEvaluate = $el->evaluate(
-			'run(() -> { 42 })'
-		);
-		$this->assertSame(42, $actualEvaluate);
+		$this->assertSame('run(function () { return 42; })', $actualCompileResult);
+		$this->assertSame(42, $actualEvaluateResult);
 	}
 }
