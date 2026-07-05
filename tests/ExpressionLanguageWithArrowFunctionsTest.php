@@ -11,7 +11,7 @@ use uuf6429\ExpressionLanguage\SafeCallable;
 /**
  * @internal
  */
-final class ExpressionLanguageTest extends TestCase
+final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 {
 	public function testThatArrowFunctionsWorkAsExpected(): void
 	{
