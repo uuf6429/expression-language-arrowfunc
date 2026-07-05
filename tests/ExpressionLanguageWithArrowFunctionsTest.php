@@ -352,7 +352,6 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 		$this->assertSame(3, $el->evaluate($expr));
 
 		$parsed = $el->parse($expr, []);
-		$this->assertInstanceOf(ParsedExpression::class, $parsed);
 		$this->assertSame('1 + 2', (string)$parsed);
 
 		$el->lint($expr, []);
@@ -369,7 +368,6 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 		$this->assertSame(3, $el->evaluate($symfonyParsed));
 
 		$parsed = $el->parse($symfonyParsed, []);
-		$this->assertInstanceOf(ParsedExpression::class, $parsed);
 		$this->assertSame('1 + 2', (string)$parsed);
 
 		$el->lint($symfonyParsed, []);
@@ -458,5 +456,71 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 			$compiled
 		);
 		$this->assertSame([[14, 16], [16, 19]], $evaluated);
+	}
+
+	/**
+	 * @dataProvider provideMalformedExpressions
+	 * @param list<string> $names
+	 */
+	public function testMalformedArrowFunctionsAndEdgeCases(string $expression, array $names = []): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+
+		// Preprocessor should fail to match them as valid arrow functions,
+		// falling back to Symfony's standard parser which will reject "->",
+		// or throwing a SyntaxError.
+		$this->expectException(SymfonyExpressionLanguage\SyntaxError::class);
+
+		$el->compile($expression, $names);
+	}
+
+	/**
+	 * @return iterable<string, array{expression: string, names?: list<string>}>
+	 */
+	public static function provideMalformedExpressions(): iterable
+	{
+		yield 'no parenthesis before arrow' => [
+			'expression' => 'x -> { x }',
+		];
+
+		yield 'no body block after arrow' => [
+			'expression' => '(x) -> x',
+		];
+
+		yield 'malformed parenthesis backwards scan' => [
+			'expression' => ')x) -> { x }',
+		];
+
+		yield 'malformed curly braces forwards scan' => [
+			'expression' => '(x) -> { x',
+		];
+
+		yield 'no parenthesis and no body block' => [
+			'expression' => 'x -> y',
+		];
+
+		yield 'empty parenthesis backwards scan' => [
+			'expression' => '-> { x }',
+		];
+	}
+
+	public function testUnusualWhitespaceAndFormatting(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->addFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
+				'run',
+				static fn(string ...$expressions) => sprintf('run(%s)', implode(', ', $expressions)),
+				static fn($args, SafeCallable $callback) => $callback->getCallback()(10, 20)
+			)
+		);
+
+		// Arrow function with carriage returns, tabs, and newlines in params and body
+		$expression = "run((\r\n\t x,\r\n\t y\r\n) -> {\r\n\t x + y\r\n})";
+		$compiled = $el->compile($expression);
+		$evaluated = $el->evaluate($expression);
+
+		$this->assertSame('run(function ($x, $y) { return ($x + $y); })', $compiled);
+		$this->assertSame(30, $evaluated);
 	}
 }
