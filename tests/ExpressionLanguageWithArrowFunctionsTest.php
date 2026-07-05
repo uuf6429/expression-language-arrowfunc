@@ -3,9 +3,9 @@
 namespace uuf6429\ExpressionLanguageTests;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\ExpressionLanguage\ExpressionFunction;
-use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Symfony\Component\ExpressionLanguage as SymfonyExpressionLanguage;
 use uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions;
+use uuf6429\ExpressionLanguage\ParsedExpression;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
 /**
@@ -18,7 +18,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 		$el = new ExpressionLanguageWithArrowFunctions();
 
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'map',
 				static function (string ...$expressions) {
 					return sprintf('map(%s)', implode(', ', $expressions));
@@ -46,7 +46,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'map',
 				static function (string ...$expressions) {
 					return sprintf('map(%s)', implode(', ', $expressions));
@@ -77,7 +77,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'apply',
 				static function (string ...$expressions) {
 					return sprintf('apply(%s)', implode(', ', $expressions));
@@ -116,7 +116,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'calc',
 				static function (string ...$expressions) {
 					return sprintf('calc(%s)', implode(', ', $expressions));
@@ -144,7 +144,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'run',
 				static function (string ...$expressions) {
 					return sprintf('run(%s)', implode(', ', $expressions));
@@ -166,7 +166,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'map',
 				static function (string ...$expressions) {
 					return sprintf('map(%s)', implode(', ', $expressions));
@@ -198,7 +198,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'map',
 				static function (string ...$expressions) {
 					return sprintf('map(%s)', implode(', ', $expressions));
@@ -218,7 +218,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 
-		$this->expectException(SyntaxError::class);
+		$this->expectException(SymfonyExpressionLanguage\SyntaxError::class);
 
 		$el->lint('map((value) -> { value * 2 }, values', ['values']);
 	}
@@ -227,7 +227,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 
-		$this->expectException(SyntaxError::class);
+		$this->expectException(SymfonyExpressionLanguage\SyntaxError::class);
 
 		$el->lint('map((value) -> { value * }, values)', ['values']);
 	}
@@ -236,7 +236,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 
-		$this->expectException(SyntaxError::class);
+		$this->expectException(SymfonyExpressionLanguage\SyntaxError::class);
 
 		$el->lint('map((value) -> { value * undefined_var }, values)', ['values']);
 	}
@@ -245,7 +245,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'run',
 				static function (string ...$expressions) {
 					return sprintf('run(%s)', implode(', ', $expressions));
@@ -272,7 +272,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
-			new ExpressionFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
 				'apply',
 				static fn(string ...$expressions) => sprintf('apply(%s)', implode(', ', $expressions)),
 				static fn($args, SafeCallable $callback, $val) => $callback->getCallback()($val)
@@ -292,5 +292,171 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 
 		$this->assertSame('apply(function ($x) use ($__lambda_0) { return ($x + $__lambda_0); }, $val)', $compiled);
 		$this->assertSame(105, $evaluated);
+	}
+
+	public function testConstructorWithCustomBase(): void
+	{
+		$base = new SymfonyExpressionLanguage\ExpressionLanguage();
+		$base->addFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
+				'custom_func',
+				static fn() => 'custom_func()',
+				static fn() => 'custom_result'
+			)
+		);
+
+		$el = new ExpressionLanguageWithArrowFunctions($base);
+		$this->assertSame('custom_result', $el->evaluate('custom_func()'));
+	}
+
+	public function testRegister(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->register(
+			'register_func',
+			static fn() => 'register_func()',
+			static fn() => 'register_result'
+		);
+
+		$this->assertSame('register_result', $el->evaluate('register_func()'));
+		$this->assertSame('register_func()', $el->compile('register_func()'));
+	}
+
+	public function testRegisterProvider(): void
+	{
+		$provider = new class implements SymfonyExpressionLanguage\ExpressionFunctionProviderInterface {
+			public function getFunctions(): array
+			{
+				return [
+					new SymfonyExpressionLanguage\ExpressionFunction(
+						'provider_func',
+						static fn() => 'provider_func()',
+						static fn() => 'provider_result'
+					),
+				];
+			}
+		};
+
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->registerProvider($provider);
+
+		$this->assertSame('provider_result', $el->evaluate('provider_func()'));
+	}
+
+	public function testStandardExpressionObject(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$expr = new SymfonyExpressionLanguage\Expression('1 + 2');
+
+		$this->assertSame('(1 + 2)', $el->compile($expr));
+		$this->assertSame(3, $el->evaluate($expr));
+
+		$parsed = $el->parse($expr, []);
+		$this->assertInstanceOf(ParsedExpression::class, $parsed);
+		$this->assertSame('1 + 2', (string)$parsed);
+
+		$el->lint($expr, []);
+	}
+
+	public function testBaseSymfonyParsedExpressionObject(): void
+	{
+		$baseEl = new SymfonyExpressionLanguage\ExpressionLanguage();
+		$symfonyParsed = $baseEl->parse('1 + 2', []);
+
+		$el = new ExpressionLanguageWithArrowFunctions();
+
+		$this->assertSame('(1 + 2)', $el->compile($symfonyParsed));
+		$this->assertSame(3, $el->evaluate($symfonyParsed));
+
+		$parsed = $el->parse($symfonyParsed, []);
+		$this->assertInstanceOf(ParsedExpression::class, $parsed);
+		$this->assertSame('1 + 2', (string)$parsed);
+
+		$el->lint($symfonyParsed, []);
+	}
+
+	public function testParseWithAlreadyParsedExpression(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$parsed1 = $el->parse('1 + 2', []);
+		$parsed2 = $el->parse($parsed1, []);
+
+		$this->assertSame($parsed1, $parsed2);
+	}
+
+	public function testParameterListsWithFormattingVariations(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->addFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
+				'calc',
+				static fn(string ...$expressions) => sprintf('calc(%s)', implode(', ', $expressions)),
+				static fn($args, SafeCallable $callback, $a, $b) => $callback->getCallback()($a, $b)
+			)
+		);
+
+		$expression1 = 'calc((x, y, ) -> { x * y }, multiplier, base)';
+		$this->assertSame('calc(function ($x, $y) { return ($x * $y); }, $multiplier, $base)', $el->compile($expression1, ['multiplier', 'base']));
+		$this->assertSame(12, $el->evaluate($expression1, ['multiplier' => 3, 'base' => 4]));
+
+		$expression2 = 'calc(( x , , y ) -> { x * y }, multiplier, base)';
+		$this->assertSame('calc(function ($x, $y) { return ($x * $y); }, $multiplier, $base)', $el->compile($expression2, ['multiplier', 'base']));
+		$this->assertSame(12, $el->evaluate($expression2, ['multiplier' => 3, 'base' => 4]));
+	}
+
+	public function testSuperglobalsExclusion(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->addFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
+				'run',
+				static fn(string ...$expressions) => sprintf('run(%s)', implode(', ', $expressions)),
+				static fn($args, SafeCallable $callback) => $callback->getCallback()()
+			)
+		);
+
+		$expression = 'run((x) -> { x + _GET })';
+		$compiled = $el->compile($expression, ['_GET']);
+
+		$this->assertSame('run(function ($x) { return ($x + $_GET); })', $compiled);
+	}
+
+	public function testStringLiteralLexerSkippingWithEscapedQuotes(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+
+		$exprSingle = '"some text \\\' (a) -> { a } \\\'"';
+		$compiledSingle = $el->compile($exprSingle);
+		$evaluatedSingle = $el->evaluate($exprSingle);
+		$this->assertSame('"some text \' (a) -> { a } \'"', $compiledSingle);
+		$this->assertSame("some text ' (a) -> { a } '", $evaluatedSingle);
+
+		$exprDouble = '\'some text \\" (a) -> { a } \\"\'';
+		$compiledDouble = $el->compile($exprDouble);
+		$evaluatedDouble = $el->evaluate($exprDouble);
+		$this->assertSame('"some text \\" (a) -> { a } \\""', $compiledDouble);
+		$this->assertSame('some text " (a) -> { a } "', $evaluatedDouble);
+	}
+
+	public function testDeepScopingOfNestedArrowFunctions(): void
+	{
+		$el = new ExpressionLanguageWithArrowFunctions();
+		$el->addFunction(
+			new SymfonyExpressionLanguage\ExpressionFunction(
+				'map',
+				static fn(string ...$expressions) => sprintf('map(%s)', implode(', ', $expressions)),
+				static fn($args, SafeCallable $callback, array $array) => array_map($callback->getCallback(), $array)
+			)
+		);
+
+		$expression = 'map((value) -> { map((v) -> { v * value + factor }, values) }, values)';
+		$compiled = $el->compile($expression, ['values', 'factor']);
+		$evaluated = $el->evaluate($expression, ['values' => [2, 3], 'factor' => 10]);
+
+		$this->assertSame(
+			'map(function ($value) use ($values) { return map(function ($v) use ($value, $factor) { return (($v * $value) + $factor); }, $values); }, $values)',
+			$compiled
+		);
+		$this->assertSame([[14, 16], [16, 19]], $evaluated);
 	}
 }
