@@ -1,4 +1,4 @@
-# 🔌 Symfony Expression Language Arrow Function
+# ➡️ Symfony Expression Language Arrow Function
 
 for Symfony Expression Language (5-8)
 
