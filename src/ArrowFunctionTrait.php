@@ -264,6 +264,7 @@ trait ArrowFunctionTrait
 			$selectedBody = null;
 			$selectedFromChar = null;
 			$selectedUntilChar = null;
+			$startBodyPos = null;
 
 			foreach ($positions as $pos) {
 				// 1. Scan backwards to extract the parameter list: (param1, param2) or param
@@ -380,11 +381,14 @@ trait ArrowFunctionTrait
 			}
 			$lambdaName = "__lambda_{$lambdaCount}";
 
+			$leftTrimmedBody = ltrim((string)$selectedBody);
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
-				'body' => trim((string)$selectedBody),
+				'body' => rtrim($leftTrimmedBody),
 				'fromChar' => max((int)$selectedFromChar, 0),
 				'untilChar' => max((int)$selectedUntilChar, 0),
+				// Add 1 to change from index to position and another 1 for the body bracket
+				'bodyAtChar' => max((int)$startBodyPos + (strlen((string)$selectedBody) - strlen($leftTrimmedBody)) + 2, 0),
 			];
 			$lambdaCount++;
 

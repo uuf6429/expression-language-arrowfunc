@@ -162,13 +162,13 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	}
 
 	/**
-	 * @testWith ["map((value) -> { value * 2 }, values)", 5, 28]
-	 *           ["map(value -> { value * 2 }, values)", 4, 27]
-	 *           ["value -> { value * 2 }", 0, 23]
-	 *           ["  value->{value * 2}  ", 2, 21]
-	 *           ["( value->{value * 2} )", 2, 21]
+	 * @testWith ["map((value) -> { value * 2 }, values)", 5, 28, 18]
+	 *           ["map(value -> { value * 2 }, values)", 4, 27, 16]
+	 *           ["value -> { value * 2 }", 0, 23, 12]
+	 *           ["  value->{value * 2}  ", 2, 21, 11]
+	 *           ["( value->{value * 2} )", 2, 21, 11]
 	 */
-	public function testParseWithArrowFunctions(string $expr, int $fromChar, int $untilChar): void
+	public function testParseWithArrowFunctions(string $expr, int $fromChar, int $untilChar, int $bodyAtChar): void
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
@@ -192,6 +192,7 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 					'body' => 'value * 2',
 					'fromChar' => $fromChar,
 					'untilChar' => $untilChar,
+					'bodyAtChar' => $bodyAtChar,
 				],
 			],
 			$parsed->getLambdas()

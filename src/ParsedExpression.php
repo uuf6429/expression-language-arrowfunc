@@ -12,6 +12,7 @@ use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpres
  *     body: string,
  *     fromChar: non-negative-int,
  *     untilChar: non-negative-int,
+ *     bodyAtChar: non-negative-int,
  * }
  * @phpstan-type TLambdas array<TLambdaName, TLambdaDefinition>
  */
