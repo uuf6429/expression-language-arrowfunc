@@ -5,7 +5,6 @@ namespace uuf6429\ExpressionLanguageTests;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ExpressionLanguage as SymfonyExpressionLanguage;
 use uuf6429\ExpressionLanguage\ExpressionLanguageWithArrowFunctions;
-use uuf6429\ExpressionLanguage\ParsedExpression;
 use uuf6429\ExpressionLanguage\SafeCallable;
 
 /**
@@ -181,11 +180,17 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 
 		$this->assertSame('map((value) -> { value * 2 }, values)', (string)$parsed);
 
-		$lambdas = $parsed->getLambdas();
-		$this->assertCount(1, $lambdas);
-		$this->assertArrayHasKey('__lambda_0', $lambdas);
-		$this->assertSame(['value'], $lambdas['__lambda_0']['params']);
-		$this->assertSame('value * 2', $lambdas['__lambda_0']['body']);
+		$this->assertSame(
+			[
+				'__lambda_0' => [
+					'params' => ['value'],
+					'body' => 'value * 2',
+					'fromChar' => 5,
+					'untilChar' => 28,
+				],
+			],
+			$parsed->getLambdas()
+		);
 
 		$evaluated = $el->evaluate($parsed, ['values' => [1, 5, 10]]);
 		$compiled = $el->compile($parsed, ['values']);

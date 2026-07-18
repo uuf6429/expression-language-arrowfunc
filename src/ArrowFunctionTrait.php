@@ -5,6 +5,9 @@ namespace uuf6429\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
+/**
+ * @phpstan-import-type TLambdas from ParsedExpression
+ */
 trait ArrowFunctionTrait
 {
 	/**
@@ -241,7 +244,7 @@ trait ArrowFunctionTrait
 
 	/**
 	 * @param array<string> $excludeNames
-	 * @return array{expression: string, lambdas: array<string, array{params: list<string>, body: string}>}
+	 * @return array{expression: string, lambdas: TLambdas}
 	 */
 	private function preprocessArrowFunctions(string $expression, array $excludeNames = []): array
 	{
@@ -348,6 +351,8 @@ trait ArrowFunctionTrait
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
 				'body' => trim((string)$selectedBody),
+				'fromChar' => max($selectedStart + 1, 0),
+				'untilChar' => max((int)$selectedEnd + 1, 0),
 			];
 			$lambdaCount++;
 

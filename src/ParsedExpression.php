@@ -5,17 +5,27 @@ namespace uuf6429\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\ParsedExpression as SymfonyParsedExpression;
 
+/**
+ * @phpstan-type TLambdaName non-empty-string
+ * @phpstan-type TLambdaDefinition array{
+ *     params: list<string>,
+ *     body: string,
+ *     fromChar: non-negative-int,
+ *     untilChar: non-negative-int,
+ * }
+ * @phpstan-type TLambdas array<TLambdaName, TLambdaDefinition>
+ */
 class ParsedExpression extends SymfonyParsedExpression
 {
 	/**
-	 * @var array<string, array{params: list<string>, body: string}>
+	 * @var TLambdas
 	 */
 	private array $lambdas;
 
 	/**
 	 * @param string $expression
 	 * @param Node $nodes
-	 * @param array<string, array{params: list<string>, body: string}> $lambdas
+	 * @param TLambdas $lambdas
 	 */
 	public function __construct(string $expression, Node $nodes, array $lambdas)
 	{
@@ -24,7 +34,7 @@ class ParsedExpression extends SymfonyParsedExpression
 	}
 
 	/**
-	 * @return array<string, array{params: list<string>, body: string}>
+	 * @return TLambdas
 	 */
 	public function getLambdas(): array
 	{
