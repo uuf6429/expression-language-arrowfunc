@@ -161,7 +161,12 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 		$this->assertSame(42, $actualEvaluateResult);
 	}
 
-	public function testParseWithArrowFunctions(): void
+	/**
+	 * @testWith ["map((value) -> { value * 2 }, values)", 5, 28]
+	 *           ["map(value -> { value * 2 }, values)", 4, 27]
+	 *           ["value -> { value * 2 }", 0, 23]
+	 */
+	public function testParseWithArrowFunctions(string $expr, int $fromChar, int $untilChar): void
 	{
 		$el = new ExpressionLanguageWithArrowFunctions();
 		$el->addFunction(
@@ -176,17 +181,15 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 			)
 		);
 
-		$parsed = $el->parse('map((value) -> { value * 2 }, values)', ['values']);
-
-		$this->assertSame('map((value) -> { value * 2 }, values)', (string)$parsed);
-
+		$parsed = $el->parse($expr, ['values']);
+		$this->assertSame($expr, (string)$parsed);
 		$this->assertSame(
 			[
 				'__lambda_0' => [
 					'params' => ['value'],
 					'body' => 'value * 2',
-					'fromChar' => 5,
-					'untilChar' => 28,
+					'fromChar' => $fromChar,
+					'untilChar' => $untilChar,
 				],
 			],
 			$parsed->getLambdas()
@@ -194,9 +197,13 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 
 		$evaluated = $el->evaluate($parsed, ['values' => [1, 5, 10]]);
 		$compiled = $el->compile($parsed, ['values']);
-
-		$this->assertSame([2, 10, 20], $evaluated);
-		$this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $compiled);
+		if ($evaluated instanceof SafeCallable) {
+			$this->assertSame(10, $evaluated->getCallback()(5));
+			$this->assertSame('function ($value) { return ($value * 2); }', $compiled);
+		} else {
+			$this->assertSame([2, 10, 20], $evaluated);
+			$this->assertSame('map(function ($value) { return ($value * 2); }, $values)', $compiled);
+		}
 	}
 
 	public function testLintWithArrowFunctionsSucceeds(): void
@@ -484,10 +491,6 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	 */
 	public static function provideMalformedExpressions(): iterable
 	{
-		yield 'no parenthesis before arrow' => [
-			'expression' => 'x -> { x }',
-		];
-
 		yield 'no body block after arrow' => [
 			'expression' => '(x) -> x',
 		];

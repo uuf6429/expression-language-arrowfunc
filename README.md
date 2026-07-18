@@ -50,14 +50,17 @@ flowchart TD
 By default, the arrow function syntax looks like so:
 
 ```text
- (a) -> { a * 2 }
-  ▲  ▲      ▲
-  │  │      └── Function body is a single expression that can make
-  │  │          use of passed parameters or global variables.
-  │  └───────── The lambda operator - input parameters are to the
-  │             left and the output expression to the right.
-  └──────────── Comma-separated list of parameters passed to the
-                arrow function.
+ (a, b) -> { a * b }
+   ▲    ▲      ▲
+   │    │      └── Function body is a single expression that can make use of passed
+   │    │          parameters or global variables, must be enclosed in curly braces.
+   │    │
+   │    └───────── The lambda operator - input parameters are to the left and the
+   │               output expression to the right.
+   │
+   └────────────── Comma-separated list of parameters received by the arrow
+                   function, surrounded by round brackets. In case of only one
+                   argument the round brackets can be omitted.
 ```
 
 </details>
@@ -184,8 +187,8 @@ class MyCustomExpressionLanguage
 
 > [!IMPORTANT]
 >
-> For safety reasons, callbacks are wrapped in a [`SafeCallable`] object. Your methods and functions need to expect
-> and handle that object. This is to avoid expressions being able to "break out" and execute anything.
+> For safety reasons, any returned callbacks are wrapped in a [`SafeCallable`] object. Your methods and functions need
+> to expect and handle that object. This is to avoid expressions being able to "break out" and execute anything.
 
 Here's a more complete example:
 
