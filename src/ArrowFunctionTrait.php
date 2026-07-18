@@ -251,6 +251,7 @@ trait ArrowFunctionTrait
 		$lambdas = [];
 		$lambdaCount = 0;
 
+		// Mutate $expression until there are no more lambdas
 		while (true) {
 			$positions = $this->getArrowPositions($expression);
 			if (count($positions) === 0) {
@@ -261,33 +262,62 @@ trait ArrowFunctionTrait
 			$selectedEnd = null;
 			$selectedParams = null;
 			$selectedBody = null;
+			$selectedFromChar = null;
+			$selectedUntilChar = null;
 
 			foreach ($positions as $pos) {
-				// 1. Scan backwards to extract the parameter list: (param1, param2)
+				// 1. Scan backwards to extract the parameter list: (param1, param2) or param
 				$i = $pos - 1;
 				while ($i >= 0 && in_array($expression[$i], [" ", "\t", "\r", "\n", "\v", "\f"], true)) {
 					$i--;
 				}
-				if ($i < 0 || $expression[$i] !== ')') {
+				if ($i < 0) {
 					continue;
 				}
-				$endParamPos = $i;
-				$depth = 1;
-				$i--;
-				while ($i >= 0 && $depth > 0) {
-					if ($expression[$i] === ')') {
-						$depth++;
-					} elseif ($expression[$i] === '(') {
-						$depth--;
+				if ($expression[$i] === ')') {
+					$endParamPos = $i;
+					$depth = 1;
+					$i--;
+					while ($i >= 0 && $depth > 0) {
+						if ($expression[$i] === ')') {
+							$depth++;
+						} elseif ($expression[$i] === '(') {
+							$depth--;
+						}
+						if ($depth > 0) {
+							$i--;
+						}
 					}
 					if ($depth > 0) {
+						continue; // Malformed parenthesis
+					}
+					$startParamPos = $i;
+					$params = substr($expression, $startParamPos + 1, $endParamPos - $startParamPos - 1);
+					$fromChar = $startParamPos + 1;
+					$untilCharOffset = 1;
+				} else {
+					$endParamPos = $i;
+					while ($i >= 0 && (ctype_alnum($expression[$i]) || $expression[$i] === '_')) {
 						$i--;
 					}
+					$startParamPos = $i + 1;
+					$params = substr($expression, $startParamPos, $endParamPos - $startParamPos + 1);
+
+					if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $params) < 1) {
+						continue;
+					}
+
+					$prev = $i;
+					while ($prev >= 0 && in_array($expression[$prev], [" ", "\t", "\r", "\n", "\v", "\f"], true)) {
+						$prev--;
+					}
+					if ($prev >= 0 && !in_array($expression[$prev], ['(', ',', '['], true)) {
+						continue;
+					}
+
+					$fromChar = $startParamPos;
+					$untilCharOffset = 2;
 				}
-				if ($depth > 0) {
-					continue; // Malformed parenthesis
-				}
-				$startParamPos = $i;
 
 				// 2. Scan forwards to extract the body block: { body_expr }
 				$i = $pos + 2;
@@ -323,10 +353,12 @@ trait ArrowFunctionTrait
 					continue;
 				}
 
-				$selectedParams = substr($expression, $startParamPos + 1, $endParamPos - $startParamPos - 1);
+				$selectedParams = $params;
 				$selectedBody = $bodyStr;
 				$selectedStart = $startParamPos;
 				$selectedEnd = $endBodyPos;
+				$selectedFromChar = $fromChar;
+				$selectedUntilChar = $endBodyPos + $untilCharOffset;
 				break;
 			}
 
@@ -351,8 +383,8 @@ trait ArrowFunctionTrait
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
 				'body' => trim((string)$selectedBody),
-				'fromChar' => max($selectedStart + 1, 0),
-				'untilChar' => max((int)$selectedEnd + 1, 0),
+				'fromChar' => max((int)$selectedFromChar, 0),
+				'untilChar' => max((int)$selectedUntilChar, 0),
 			];
 			$lambdaCount++;
 
