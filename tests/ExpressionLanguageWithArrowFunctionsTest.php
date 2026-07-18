@@ -165,6 +165,8 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 	 * @testWith ["map((value) -> { value * 2 }, values)", 5, 28]
 	 *           ["map(value -> { value * 2 }, values)", 4, 27]
 	 *           ["value -> { value * 2 }", 0, 23]
+	 *           ["  value->{value * 2}  ", 2, 21]
+	 *           ["( value->{value * 2} )", 2, 21]
 	 */
 	public function testParseWithArrowFunctions(string $expr, int $fromChar, int $untilChar): void
 	{
@@ -505,6 +507,14 @@ final class ExpressionLanguageWithArrowFunctionsTest extends TestCase
 
 		yield 'no parenthesis and no body block' => [
 			'expression' => 'x -> y',
+		];
+
+		yield 'invalid bare parameter' => [
+			'expression' => '1x -> { x }',
+		];
+
+		yield 'bare parameter after invalid delimiter' => [
+			'expression' => '1 + x -> { x }',
 		];
 
 		yield 'empty parenthesis backwards scan' => [
