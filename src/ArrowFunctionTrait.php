@@ -251,6 +251,12 @@ trait ArrowFunctionTrait
 		$lambdas = [];
 		$lambdaCount = 0;
 
+		// Maps every character index of the (progressively mutated) working expression
+		// back to its index in the original, unmodified source. As arrow functions are
+		// replaced by shorter "__lambda_N" placeholders the working expression drifts out
+		// of sync with the source; this map lets us record absolute source offsets.
+		$offsetMap = range(0, strlen($expression));
+
 		// Mutate $expression until there are no more lambdas
 		while (true) {
 			$positions = $this->getArrowPositions($expression);
@@ -382,17 +388,34 @@ trait ArrowFunctionTrait
 			$lambdaName = "__lambda_{$lambdaCount}";
 
 			$leftTrimmedBody = ltrim((string)$selectedBody);
+			$trimmedBody = rtrim($leftTrimmedBody);
+			$leadingWs = strlen((string)$selectedBody) - strlen($leftTrimmedBody);
+			$trailingWs = strlen($leftTrimmedBody) - strlen($trimmedBody);
+
+			// Boundaries of the (trimmed) body content, in working-expression indices.
+			$bodyContentStart = (int)$startBodyPos + 1 + $leadingWs;
+			$bodyContentEnd = (int)$startBodyPos + 1 + strlen((string)$selectedBody) - $trailingWs;
+
 			$lambdas[$lambdaName] = [
 				'params' => $paramNames,
-				'body' => rtrim($leftTrimmedBody),
-				'fromChar' => max((int)$selectedFromChar, 0),
-				'untilChar' => max((int)$selectedUntilChar, 0),
-				// Add 1 to change from index to position and another 1 for the body bracket
-				'bodyAtChar' => max((int)$startBodyPos + (strlen((string)$selectedBody) - strlen($leftTrimmedBody)) + 2, 0),
+				'body' => $trimmedBody,
+				// Absolute offsets into the original source (0-based).
+				'fromChar' => max($offsetMap[$selectedStart] ?? $selectedStart, 0),
+				'untilChar' => max(($offsetMap[(int)$selectedEnd] ?? (int)$selectedEnd) + 1, 0),
+				'bodyFromChar' => max($offsetMap[$bodyContentStart] ?? $bodyContentStart, 0),
+				'bodyUntilChar' => max($offsetMap[$bodyContentEnd] ?? $bodyContentEnd, 0),
 			];
 			$lambdaCount++;
 
-			// Replace arrow function with the placeholder variable
+			// Replace arrow function with the placeholder variable, keeping the source
+			// offset map in sync with the mutated expression.
+			$placeholderLength = strlen($lambdaName);
+			$sourceAnchor = $offsetMap[$selectedStart] ?? $selectedStart;
+			$offsetMap = array_merge(
+				array_slice($offsetMap, 0, $selectedStart),
+				array_fill(0, $placeholderLength, $sourceAnchor),
+				array_slice($offsetMap, (int)$selectedEnd + 1),
+			);
 			$expression = substr($expression, 0, $selectedStart) . $lambdaName . substr($expression, (int)$selectedEnd + 1);
 		}
 
